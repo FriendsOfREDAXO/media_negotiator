@@ -29,7 +29,7 @@ class Helper
 
     private static function getImagickFormats(): array
     {
-        if (!class_exists(\Imagick::class)) {
+        if (!class_exists(\Imagick::class) || \Imagick::getVersion() === false) {
             return [];
         }
         $imagick = new \Imagick();
