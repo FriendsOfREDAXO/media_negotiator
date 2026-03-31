@@ -110,7 +110,6 @@ if (function_exists('imagewebp')) {
     imagewebp($image);
     $imageData = ob_get_contents();
     ob_end_clean();
-    imagedestroy($image);
     $size_imagewebp = strlen($imageData) / 1000;
     $img_imagewebp = '<img class="img-thumbnail" src="data:image/webp;base64,' . base64_encode($imageData) . '">';
 } else {
@@ -123,7 +122,6 @@ if (function_exists('imageavif')) {
     imageavif($image);
     $imageData = ob_get_contents();
     ob_end_clean();
-    imagedestroy($image);
     $size_imageavif = strlen($imageData) / 1000;
     $img_imageavif = '<img class="img-thumbnail" src="data:image/webp;base64,' . base64_encode($imageData) . '">';
 } else {
