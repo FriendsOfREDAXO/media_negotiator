@@ -1,7 +1,7 @@
 package: media_negotiator
 version: 6.0.0
 name: Media Negotiator
-author: Andreas Lenhardt
+author: Friends of REDAXO
 supportpage: https://github.com/FriendsOfREDAXO/media_negotiator
 
 pages:
@@ -10,7 +10,7 @@ pages:
         perm: media_negotiator[]
         subpages:
                 setup:
-                    { title: translate:media_negotiator_setup_instructions_title, icon: rex-icon }
+                    { title: translate:media_negotiator_setup_instructions_title, icon: rex-icon fa-regular fa-images }
                 config:
                     { title: translate:media_negotiator_config_title, icon: rex-icon fa-cog }
                 types:

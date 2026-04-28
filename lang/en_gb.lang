@@ -8,7 +8,7 @@ media_negotiator_no = No
 media_negotiator_effect_name = Negotiate image format
 
 # Setup page
-media_negotiator_setup_instructions_title = Instructions
+media_negotiator_setup_instructions_title = Overview
 media_negotiator_setup_instructions_text = Add the "Negotiate image format" effect to a media type. The media manager will then automatically deliver the best supported format: AVIF, WebP, or the original (in that order).
 media_negotiator_setup_available_functions = Available functions
 media_negotiator_setup_imagick_installed = Imagick is installed

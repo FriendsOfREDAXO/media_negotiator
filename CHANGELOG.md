@@ -1,5 +1,9 @@
 # Changelog
 
+## [6.0.1] - 2026-04-28
+
+- imagedestroy auf setupseite entfernt 
+
 ## [6.0.0] - 2026-04-28
 
 ### Breaking Changes
