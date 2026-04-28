@@ -1,5 +1,11 @@
 # Changelog
 
+## [6.0.2] - 2026-04-28
+
+- MIME-Header korrigiert: `Content-Type` wird bei AVIF/WebP nun als `image/avif` bzw. `image/webp` gesetzt.
+- Config-Seite erweitert: `preferred_format` ist jetzt als UI-Feld verfügbar (Konsistenz zu `default_config`).
+- Setup-Seite bereinigt: JS-Einbindung entfernt, `setup_compare.js` wird nur noch zentral über `boot.php` geladen.
+
 ## [6.0.1] - 2026-04-28
 
 - imagedestroy auf setupseite entfernt 

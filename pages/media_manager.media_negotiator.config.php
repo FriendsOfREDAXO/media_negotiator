@@ -1,7 +1,5 @@
 <?php
 
-use FriendsOfRedaxo\MediaNegotiator\Helper;
-
 $form = rex_config_form::factory('media_negotiator');
 
 $field = $form->addRadioField('force_imagick');
@@ -34,6 +32,13 @@ $field->setLabel(rex_i18n::msg('media_negotiator_config_ua_fallback_label'));
 $field->setNotice(rex_i18n::msg('media_negotiator_config_ua_fallback_notice'));
 $field->addOption(rex_i18n::msg('media_negotiator_yes'), 1);
 $field->addOption(rex_i18n::msg('media_negotiator_no'), 0);
+
+$field = $form->addSelectField('preferred_format');
+$field->setLabel(rex_i18n::msg('media_negotiator_config_preferred_format_label'));
+$field->setNotice(rex_i18n::msg('media_negotiator_config_preferred_format_notice'));
+$select = $field->getSelect();
+$select->addOption(rex_i18n::msg('media_negotiator_config_preferred_format_avif'), 'avif');
+$select->addOption(rex_i18n::msg('media_negotiator_config_preferred_format_webp'), 'webp');
 
 $fragment = new rex_fragment();
 $fragment->setVar('class', 'edit', false);

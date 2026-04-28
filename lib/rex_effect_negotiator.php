@@ -48,7 +48,7 @@ class rex_effect_negotiator extends rex_effect_abstract
                     }
                     $this->media->setImage($converted);
                     $this->media->setFormat('avif');
-                    $this->media->setHeader('Content-Type', 'avif');
+                    $this->media->setHeader('Content-Type', 'image/avif');
                     $this->media->refreshImageDimensions();
                 } catch (\Exception $e) {
                     // Conversion failed (e.g. timeout, memory limit) – deliver original
@@ -75,7 +75,7 @@ class rex_effect_negotiator extends rex_effect_abstract
                     }
                     $this->media->setImage($converted);
                     $this->media->setFormat('webp');
-                    $this->media->setHeader('Content-Type', 'webp');
+                    $this->media->setHeader('Content-Type', 'image/webp');
                     $this->media->refreshImageDimensions();
                 } catch (\Exception $e) {
                     // Conversion failed – deliver original

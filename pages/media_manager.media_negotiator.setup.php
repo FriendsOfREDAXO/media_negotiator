@@ -204,8 +204,6 @@ echo $fragment->parse('core/page/section.php');
 
 // ── 3. Demo images section ─────────────────────────────────────────────────
 
-rex_view::addJsFile(rex_url::addonAssets('media_negotiator', 'setup_compare.js'));
-
 $demo_img = rex_path::addon('media_negotiator', 'data/demo.jpg');
 $addon = rex_addon::get('media_negotiator');
 
