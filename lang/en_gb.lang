@@ -1,0 +1,105 @@
+# Media Negotiator – English
+
+media_negotiator_title = Media Negotiator
+media_negotiator_yes = Yes
+media_negotiator_no = No
+
+# Effect
+media_negotiator_effect_name = Negotiate image format
+
+# Setup page
+media_negotiator_setup_instructions_title = Instructions
+media_negotiator_setup_instructions_text = Add the "Negotiate image format" effect to a media type. The media manager will then automatically deliver the best supported format: AVIF, WebP, or the original (in that order).
+media_negotiator_setup_available_functions = Available functions
+media_negotiator_setup_imagick_installed = Imagick is installed
+media_negotiator_setup_imagick_not_installed = Imagick is not installed
+media_negotiator_setup_imagick_webp_yes = Imagick supports WebP
+media_negotiator_setup_imagick_webp_no = Imagick does not support WebP
+media_negotiator_setup_imagick_avif_yes = Imagick supports AVIF
+media_negotiator_setup_imagick_avif_no = Imagick does not support AVIF
+media_negotiator_setup_imagick_version = Imagick version
+media_negotiator_setup_imageavif_available = imageavif is available
+media_negotiator_setup_imageavif_not_available = imageavif is not available
+media_negotiator_setup_imagewebp_available = imagewebp is available
+media_negotiator_setup_imagewebp_not_available = imagewebp is not available
+media_negotiator_setup_gd_webp_yes = GD supports WebP
+media_negotiator_setup_gd_webp_no = GD does not support WebP
+media_negotiator_setup_gd_avif_yes = GD supports AVIF
+media_negotiator_setup_gd_avif_no = GD does not support AVIF
+media_negotiator_setup_redaxo_version_ok = REDAXO version ≥ 5.15.0
+media_negotiator_setup_redaxo_version_nok = REDAXO version is older than 5.15.0
+media_negotiator_setup_webp_output_possible = WebP output possible
+media_negotiator_setup_avif_output_possible = AVIF output possible
+media_negotiator_setup_demo_title = Demo images for conversion check
+media_negotiator_setup_demo_notice = Even if an AVIF or WebP image is displayed here, output in those formats may not work if "No" is shown above. These images are not served through the media manager and are therefore not subject to the same restrictions.
+media_negotiator_setup_not_available = not available
+media_negotiator_setup_table_function = Function
+media_negotiator_setup_table_image = Image
+media_negotiator_setup_table_size = Size
+media_negotiator_setup_table_compare = Compared to original
+media_negotiator_setup_original = Original image
+media_negotiator_setup_compare_left = Left
+media_negotiator_setup_compare_right = Right
+media_negotiator_setup_compare_hint = Drag the slider to compare
+
+# Setup – Browser check
+media_negotiator_setup_section_server = Server configuration
+media_negotiator_setup_section_browser = This browser
+media_negotiator_setup_section_demo = Demo images
+media_negotiator_setup_server_gd = GD library
+media_negotiator_setup_server_imagick = Imagick
+media_negotiator_setup_browser_accept_header = Accept header
+media_negotiator_setup_browser_user_agent = User-Agent
+media_negotiator_setup_browser_declared_avif = Declares AVIF support
+media_negotiator_setup_browser_declared_webp = Declares WebP support
+media_negotiator_setup_browser_ua_avif = UA detects AVIF support
+media_negotiator_setup_browser_ua_webp = UA detects WebP support
+media_negotiator_setup_browser_would_deliver = Media Negotiator would deliver
+media_negotiator_setup_browser_via_accept = via Accept header
+media_negotiator_setup_browser_via_ua = via User-Agent fallback
+media_negotiator_setup_browser_ua_fallback_active = UA fallback active (settings)
+media_negotiator_setup_browser_ua_fallback_inactive = UA fallback disabled (settings)
+media_negotiator_setup_browser_no_accept_formats = No explicit image format in Accept header
+media_negotiator_setup_format_avif = AVIF
+media_negotiator_setup_format_webp = WebP
+media_negotiator_setup_format_original = Original (no upgrade)
+
+# Settings page
+media_negotiator_config_title = Settings
+media_negotiator_config_force_imagick_label = Force Imagick (even when GD functions are available)
+media_negotiator_config_disable_avif_label = Disable AVIF
+media_negotiator_config_disable_avif_notice = If the server does not have an AVIF codec, AVIF generation can be disabled here.
+media_negotiator_config_webp_quality_label = WebP quality (0–100)
+media_negotiator_config_webp_quality_notice = Default: 80. Only applies when using Imagick.
+media_negotiator_config_avif_quality_label = AVIF quality (0–100)
+media_negotiator_config_avif_quality_notice = Default: 60. Only applies when using Imagick.
+media_negotiator_config_ua_fallback_label = Enable User-Agent fallback
+media_negotiator_config_ua_fallback_notice = When no explicit image format is present in the Accept header (e.g. Safari), the User-Agent string is used to detect format support.
+media_negotiator_config_preferred_format_label = Preferred output format
+media_negotiator_config_preferred_format_notice = Determines which format is preferred when the browser supports multiple formats.
+media_negotiator_config_preferred_format_auto = Automatic (AVIF › WebP › Original)
+media_negotiator_config_preferred_format_avif = Prefer AVIF (default)
+media_negotiator_config_preferred_format_webp = Prefer WebP (no AVIF)
+
+# Types page
+media_negotiator_types_title = Type assignment
+media_negotiator_types_section_title = Assign negotiator effect to media types
+media_negotiator_types_description = Here you can add or remove the "Negotiate image format" effect from multiple media types at once. Select the desired types and click "Add effect" or "Remove effect".
+media_negotiator_types_table_type = Media type
+media_negotiator_types_table_description = Description
+media_negotiator_types_table_status = Negotiator effect
+media_negotiator_types_table_effects = Effects total
+media_negotiator_types_has_effect = Active
+media_negotiator_types_no_effect = Not assigned
+media_negotiator_types_priority = Priority %s
+media_negotiator_types_position = Position in effect stack
+media_negotiator_types_position_append = Append (after existing effects)
+media_negotiator_types_position_prepend = Prepend (before existing effects)
+media_negotiator_types_action_add = Add effect
+media_negotiator_types_action_remove = Remove effect
+media_negotiator_types_select_all = Select all
+media_negotiator_types_no_types = No media types available.
+media_negotiator_types_error_none_selected = Please select at least one media type.
+media_negotiator_types_confirm_remove = Remove the negotiator effect from the selected media types?
+media_negotiator_types_success_add = Effect added: %s type(s) updated, %s already present (skipped).
+media_negotiator_types_success_remove = Effect removed: %s type(s) updated, %s without effect (skipped).

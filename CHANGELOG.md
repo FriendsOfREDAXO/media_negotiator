@@ -1,5 +1,38 @@
 # Changelog
 
+## [6.0.0] - 2026-04-28
+
+### Breaking Changes
+- Namespace auf `FriendsOfRedaxo\MediaNegotiator` umgestellt.
+- Cache-Key-Strategie für Negotiator-Derivate geändert (Format + Quality + relevante Config), bestehende Derivate werden damit neu aufgebaut.
+
+### Added
+- Vollständige i18n für Deutsch/Englisch (`lang/de_de.lang`, `lang/en_gb.lang`).
+- Neue Konfigurationsoptionen:
+  - `webp_quality` (0–100, Standard 80)
+  - `avif_quality` (0–100, Standard 60)
+  - `ua_fallback` (User-Agent-Fallback bei fehlenden expliziten Accept-Formaten)
+  - `preferred_format` (`avif` oder `webp`)
+- Neues CLI-Kommando `media:negotiator:warmup` zum Vorwärmen des Media-Manager-Caches (`--type`, `--formats`, `--limit`, `--base-url`, `--dry-run`).
+- Neue Backend-Seite zur Mehrfach-Zuweisung des Negotiator-Effekts auf Media-Manager-Typen (Bulk Add/Remove, Append/Prepend).
+- Setup-Seite als 3-Panel-Ansicht überarbeitet (Server, Browser, Demo).
+- Demo-Vergleich mit Side-by-Side-Slider und Format-Auswahl ergänzt.
+
+### Changed
+- Formatentscheidung berücksichtigt `preferred_format` in Accept- und UA-Fallback-Pfaden.
+- Browser-Fähigkeitserkennung in `getBrowserFormatSupport()` von serverseitiger Codec-Verfügbarkeit entkoppelt.
+- Demo-Bilder auf der Setup-Seite verwenden die aktiven Addon-Einstellungen (Engine/Codec-Entscheidung, Quality, AVIF-Disable, Preferred-Format).
+- JS-Initialisierung für Setup-Vergleich auf REDAXO-Backend-Navigation (`rex:ready`) und robuste Event-Delegation ausgelegt.
+
+### Fixed
+- #8: Wildcards (`*/*`, `image/*`) werden nicht mehr als AVIF/WebP-Support gewertet.
+- Safari/UA-Erkennung korrigiert (Browser-Support-Anzeige vs. tatsächliche Server-Auslieferung getrennt).
+- `webpPossible()`/`avifPossible()` korrigiert (OR-Logik statt fehlerhafter UND-Verknüpfung).
+- SVG/GIF/ICO werden im Effekt korrekt übersprungen (#28).
+- Imagick-Konvertierung gegen Laufzeitfehler abgesichert (Fallback auf Original statt 500, #31).
+- Typisierung und Rückgabewerte in Helper/Effekt-Klassen nachgezogen (`GdImage|false`-Checks etc.).
+- Konfigurations-Radios auf stabile 1/0-Werte umgestellt.
+
 ## [5.0.3] - 22.01.2025
 - #29 / fix error messages
 - Check if PHP and GD is compiled with avif support
