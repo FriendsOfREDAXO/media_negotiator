@@ -247,7 +247,6 @@ $convertWithGd = static function (string $sourcePath, string $targetFormat, int 
     }
 
     $imgData = ob_get_clean();
-    imagedestroy($image);
 
     if (!$ok || $imgData === false || $imgData === '') {
         return '';
