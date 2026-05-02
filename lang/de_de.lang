@@ -130,19 +130,3 @@ media_negotiator_icc_fix_success_remove = Effekt entfernt: %s Typ(en) aktualisie
 
 # Demo-Seite
 media_negotiator_setup_demo_size_pending = wird geladen …
-
-# Warmup-Seite
-media_negotiator_warmup_title = Cache Warmup
-media_negotiator_warmup_section_title = Cache Warmup
-media_negotiator_warmup_description = Wärmt den Media-Manager-Cache für alle Medientypen vor, die den Negotiator- oder ICC-Fix-Effekt verwenden. Der Browser sendet schrittweise Anfragen an die Derivat-URLs, sodass alle Bilder vorab konvertiert und gecacht werden.
-media_negotiator_warmup_types_headline = Gefundene Medientypen
-media_negotiator_warmup_loading = Wird geladen …
-media_negotiator_warmup_start = Warmup starten
-media_negotiator_warmup_stop = Stoppen
-media_negotiator_warmup_stopping = Wird gestoppt …
-media_negotiator_warmup_stopped = Gestoppt.
-media_negotiator_warmup_done_ok = Fertig. Keine Fehler.
-media_negotiator_warmup_done_errors = Fertig. %s Fehler.
-media_negotiator_warmup_no_types = Keine Medientypen mit Negotiator- oder ICC-Fix-Effekt gefunden.
-media_negotiator_warmup_log_placeholder = Hier werden Fehler angezeigt.
-media_negotiator_warmup_log_hint = Nur Fehler werden im Log angezeigt. Erfolgreiche Verarbeitungen werden nicht gelistet.

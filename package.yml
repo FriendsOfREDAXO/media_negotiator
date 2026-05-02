@@ -21,9 +21,6 @@ pages:
             icc_fix:
                 title: 'translate:media_negotiator_icc_fix_title'
                 icon: 'rex-icon fa-magic'
-            warmup:
-                title: 'translate:media_negotiator_warmup_title'
-                icon: 'rex-icon fa-rocket'
 
 default_config:
     force_imagick: false
