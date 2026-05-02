@@ -10,6 +10,9 @@ if (rex::isBackend()) {
     if ($page === 'media_manager/media_negotiator/setup') {
         rex_view::addJsFile(rex_url::addonAssets('media_negotiator', 'setup_compare.js'));
     }
+    if ($page === 'media_manager/media_negotiator/warmup') {
+        rex_view::addJsFile(rex_url::addonAssets('media_negotiator', 'warmup.js'));
+    }
 }
 
 rex_extension::register('MEDIA_MANAGER_INIT', function (rex_extension_point $ep) {

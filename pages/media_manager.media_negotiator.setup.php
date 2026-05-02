@@ -203,128 +203,80 @@ $fragment->setVar('body', $browserBody, false);
 echo $fragment->parse('core/page/section.php');
 
 // ── 3. Demo images section ─────────────────────────────────────────────────
+// Die konvertierten Demo-Bilder werden NICHT mehr inline generiert/base64-encodiert.
+// Stattdessen liefert rex_api_media_negotiator_demo die Bilder gecacht aus.
+// Die Setup-Seite rendert sofort; die Bilder laden lazy über normale <img>-Tags.
 
-$demo_img = rex_path::addon('media_negotiator', 'data/demo.jpg');
-$addon = rex_addon::get('media_negotiator');
-
+$demo_img  = rex_path::addon('media_negotiator', 'data/demo.jpg');
+$addon     = rex_addon::get('media_negotiator');
+$disableAvif = (bool) $addon->getConfig('disable_avif', false);
+$preferred   = Helper::getPreferredFormat();
 $forceImagick = (bool) $addon->getConfig('force_imagick', false);
-$disableAvif  = (bool) $addon->getConfig('disable_avif', false);
 $webpQuality  = Helper::getWebpQuality();
 $avifQuality  = Helper::getAvifQuality();
-$preferred    = Helper::getPreferredFormat();
+
+// JPEG-Originalgröße (nur Datei lesen – keine Konvertierung)
+$jpegSize = is_readable($demo_img) ? (int) filesize($demo_img) : 0;
+$size_jpeg = $jpegSize / 1000;
+
+// Gecachte Dateigrößen (0 = noch nicht im Cache – wird beim ersten Img-Request erzeugt)
+$cachedSizeWebp = 0;
+$cachedSizeAvif = 0;
+$cachedFileWebp = rex_api_media_negotiator_demo::getCachedFilePath('webp');
+if ($cachedFileWebp !== null) {
+    $cachedSizeWebp = (int) filesize($cachedFileWebp);
+}
+if (!$disableAvif) {
+    $cachedFileAvif = rex_api_media_negotiator_demo::getCachedFilePath('avif');
+    if ($cachedFileAvif !== null) {
+        $cachedSizeAvif = (int) filesize($cachedFileAvif);
+    }
+}
 
 /** @var list<array{id:string,label:string,mime:string,size:float,src:string}> $demos */
 $demos = [];
 
-$raw_jpeg = rex_file::get($demo_img);
-if ($raw_jpeg !== null && $raw_jpeg !== '') {
-    $size_jpeg = strlen($raw_jpeg) / 1000;
+// JPEG-Original (als API-URL – kein base64)
+$demos[] = [
+    'id'    => 'jpeg',
+    'label' => rex_i18n::msg('media_negotiator_setup_original') . ' (JPEG)',
+    'mime'  => 'image/jpeg',
+    'size'  => $size_jpeg,
+    'src'   => rex_url::backendController(['rex-api-call' => 'media_negotiator_demo', 'format' => 'jpeg']),
+];
+
+$engineLabel = $forceImagick ? 'Imagick' : 'GD/Imagick';
+
+if (Helper::webpPossible()) {
     $demos[] = [
-        'id'    => 'jpeg',
-        'label' => rex_i18n::msg('media_negotiator_setup_original') . ' (JPEG)',
-        'mime'  => 'image/jpeg',
-        'size'  => $size_jpeg,
-        'src'   => 'data:image/jpeg;base64,' . base64_encode($raw_jpeg),
+        'id'    => 'cfg-webp',
+        'label' => 'WebP (' . $engineLabel . ', Q' . $webpQuality . ')',
+        'mime'  => 'image/webp',
+        'size'  => $cachedSizeWebp / 1000,
+        'src'   => rex_api_media_negotiator_demo::getUrl('webp'),
     ];
-} else {
-    $size_jpeg = 0;
 }
 
-$convertWithGd = static function (string $sourcePath, string $targetFormat, int $quality): string {
-    $image = imagecreatefromjpeg($sourcePath);
-    if ($image === false) {
-        return '';
-    }
-
-    ob_start();
-    $ok = false;
-    if ($targetFormat === 'webp' && function_exists('imagewebp')) {
-        $ok = imagewebp($image, null, $quality);
-    } elseif ($targetFormat === 'avif' && function_exists('imageavif')) {
-        $ok = imageavif($image, null, $quality);
-    }
-
-    $imgData = ob_get_clean();
-
-    if (!$ok || $imgData === false || $imgData === '') {
-        return '';
-    }
-
-    return $imgData;
-};
-
-$convertWithImagick = static function (string $sourcePath, string $targetFormat, int $quality): string {
-    if (!class_exists(Imagick::class)) {
-        return '';
-    }
-
-    try {
-        $im = new Imagick($sourcePath);
-        $im->setImageFormat($targetFormat);
-        $im->setImageCompressionQuality($quality);
-        $imgData = $im->getImageBlob();
-        $im->clear();
-        $im->destroy();
-        return $imgData;
-    } catch (Exception) {
-        return '';
-    }
-};
-
-$addDemo = static function (array &$rows, string $id, string $label, string $mime, string $imgData): void {
-    if ($imgData === '') {
-        return;
-    }
-
-    $rows[] = [
-        'id'    => $id,
-        'label' => $label,
-        'mime'  => $mime,
-        'size'  => strlen($imgData) / 1000,
-        'src'   => 'data:' . $mime . ';base64,' . base64_encode($imgData),
+if (!$disableAvif && Helper::avifPossible()) {
+    $demos[] = [
+        'id'    => 'cfg-avif',
+        'label' => 'AVIF (' . $engineLabel . ', Q' . $avifQuality . ')',
+        'mime'  => 'image/avif',
+        'size'  => $cachedSizeAvif / 1000,
+        'src'   => rex_api_media_negotiator_demo::getUrl('avif'),
     ];
-};
-
-$webpData = '';
-if ($forceImagick) {
-    $webpData = $convertWithImagick($demo_img, 'webp', $webpQuality);
-    $addDemo($demos, 'cfg-webp', 'WebP (Imagick, Q' . $webpQuality . ')', 'image/webp', $webpData);
-} else {
-    $webpData = $convertWithGd($demo_img, 'webp', $webpQuality);
-    if ($webpData !== '') {
-        $addDemo($demos, 'cfg-webp', 'WebP (GD, Q' . $webpQuality . ')', 'image/webp', $webpData);
-    } else {
-        $webpData = $convertWithImagick($demo_img, 'webp', $webpQuality);
-        $addDemo($demos, 'cfg-webp', 'WebP (Imagick, Q' . $webpQuality . ')', 'image/webp', $webpData);
-    }
-}
-
-if (!$disableAvif) {
-    $avifData = '';
-    if ($forceImagick) {
-        $avifData = $convertWithImagick($demo_img, 'avif', $avifQuality);
-        $addDemo($demos, 'cfg-avif', 'AVIF (Imagick, Q' . $avifQuality . ')', 'image/avif', $avifData);
-    } else {
-        $avifData = $convertWithGd($demo_img, 'avif', $avifQuality);
-        if ($avifData !== '') {
-            $addDemo($demos, 'cfg-avif', 'AVIF (GD, Q' . $avifQuality . ')', 'image/avif', $avifData);
-        } else {
-            $avifData = $convertWithImagick($demo_img, 'avif', $avifQuality);
-            $addDemo($demos, 'cfg-avif', 'AVIF (Imagick, Q' . $avifQuality . ')', 'image/avif', $avifData);
-        }
-    }
 }
 
 $pct = static function (float $size, float $total): string {
     if ($total <= 0 || $size <= 0) {
-        return '';
+        return '<span class="label label-default">–</span>';
     }
     $val = $size / $total * 100;
     $cls = $val < 70 ? 'label-success' : ($val < 100 ? 'label-warning' : 'label-danger');
     return '<span class="label ' . $cls . '">' . number_format($val, 0) . '%</span>';
 };
 
-// Default selects: left = original, right = preferred format from config when available.
+// Default selects: links = Original, rechts = bevorzugtes Format aus Config
 $defaultRight = count($demos) > 1 ? count($demos) - 1 : 0;
 foreach ($demos as $idx => $demo) {
     if (($preferred === 'webp' && $demo['mime'] === 'image/webp')
@@ -343,14 +295,19 @@ ob_start(); ?>
     <div class="col-xs-6 col-sm-4 col-md-3" style="margin-bottom:12px">
         <div class="panel panel-default" style="margin:0;overflow:hidden">
             <div style="height:130px;overflow:hidden;background:#f0f0f0;display:flex;align-items:center;justify-content:center">
-                <img src="<?= $demo['src'] ?>" alt="<?= rex_escape($demo['label']) ?>"
+                <img src="<?= rex_escape($demo['src']) ?>" alt="<?= rex_escape($demo['label']) ?>"
+                     loading="lazy"
                      style="max-height:130px;max-width:100%;width:auto;height:auto;display:block">
             </div>
             <div style="padding:8px 10px">
                 <strong style="font-size:0.9em"><?= rex_escape($demo['label']) ?></strong><br>
-                <span class="text-muted" style="font-size:0.82em"><?= number_format($demo['size'], 1) ?> KB</span>
-                <?php if ($i > 0): ?>
-                    <?= $pct($demo['size'], $size_jpeg) ?>
+                <?php if ($demo['size'] > 0): ?>
+                    <span class="text-muted" style="font-size:0.82em"><?= number_format($demo['size'], 1) ?> KB</span>
+                    <?php if ($i > 0): ?>
+                        <?= $pct($demo['size'], $size_jpeg) ?>
+                    <?php endif; ?>
+                <?php else: ?>
+                    <span class="text-muted" style="font-size:0.82em"><?= rex_i18n::msg('media_negotiator_setup_demo_size_pending') ?></span>
                 <?php endif; ?>
             </div>
         </div>
@@ -368,7 +325,10 @@ ob_start(); ?>
             <option value="<?= rex_escape($demo['id']) ?>"
                     data-src="<?= rex_escape($demo['src']) ?>"
                     <?= $i === 0 ? 'selected' : '' ?>>
-                <?= rex_escape($demo['label']) ?> (<?= number_format($demo['size'], 1) ?> KB)
+                <?= rex_escape($demo['label']) ?>
+                <?php if ($demo['size'] > 0): ?>
+                    (<?= number_format($demo['size'], 1) ?> KB)
+                <?php endif; ?>
             </option>
             <?php endforeach; ?>
         </select>
@@ -381,7 +341,10 @@ ob_start(); ?>
             <option value="<?= rex_escape($demo['id']) ?>"
                     data-src="<?= rex_escape($demo['src']) ?>"
                     <?= $i === $defaultRight ? 'selected' : '' ?>>
-                <?= rex_escape($demo['label']) ?> (<?= number_format($demo['size'], 1) ?> KB)
+                <?= rex_escape($demo['label']) ?>
+                <?php if ($demo['size'] > 0): ?>
+                    (<?= number_format($demo['size'], 1) ?> KB)
+                <?php endif; ?>
             </option>
             <?php endforeach; ?>
         </select>
