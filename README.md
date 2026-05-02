@@ -14,7 +14,6 @@ REDAXO-Addon, das dem Media Manager einen Effekt für **HTTP Content Negotiation
 - [Einrichtung](#einrichtung)
 - [Einstellungen](#einstellungen)
 - [User-Agent-Fallback](#user-agent-fallback)
-- [CLI-Cache-Warmup](#cli-cache-warmup)
 - [Setup-Seite](#setup-seite)
 - [ICC-Fix-Seite](#icc-fix-seite)
 - [Changelog](#changelog)
@@ -117,29 +116,9 @@ Der UA-Fallback greift nur wenn der Accept-Header keine expliziten Bildformate e
 
 ---
 
-## CLI-Cache-Warmup
-
-Das Kommando `media:negotiator:warmup` füllt den Media-Manager-Cache vorab, ohne dass Seitenbesucher auf die erste Konvertierung warten müssen.
-
-```bash
-php redaxo/bin/console media:negotiator:warmup --type=mein-medientyp
-```
-
-### Optionen
-
-| Option | Beschreibung | Standard |
-|--------|-------------|---------|
-| `--type` | Medientyp-Name (mehrfach verwendbar) | alle Typen mit Negotiator-Effekt |
-| `--formats` | Comma-separierte Formate: `avif,webp,default` | `avif,webp` |
-| `--limit` | Maximale Anzahl Bilder | unbegrenzt |
-| `--base-url` | Basis-URL für Requests | REDAXO `server`-Konfiguration |
-| `--dry-run` | Nur anzeigen, was konvertiert würde | – |
-
----
-
 ## Setup-Seite
 
-Unter **Media Manager → Media Negotiator → Setup** werden die verfügbaren Codecs und Bibliotheken auf dem Server angezeigt. Außerdem werden Demo-Bilder in allen verfügbaren Formaten gerendert, um die Konvertierung direkt zu überprüfen.
+Unter **Media Manager → Media Negotiator → Setup** werden die verfügbaren Codecs und Bibliotheken auf dem Server angezeigt. Die Demo-Bilder werden bedarfsgesteuert geladen und nicht mehr direkt beim Seitenaufbau inline konvertiert.
 
 ---
 

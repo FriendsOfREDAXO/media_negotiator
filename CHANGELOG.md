@@ -10,7 +10,9 @@
 ### Changed
 - `srgb_preprocess` verwendet jetzt eine echte ICC-Profiltransformation mit anschließend erneut eingebettetem sRGB-Profil statt eines einfachen Colorspace-Switches.
 - Typen-Zuweisung in `MediaTypeManager` verallgemeinert, sodass sowohl der Negotiator-Effekt als auch der neue ICC-Fix-Effekt über denselben Verwaltungsweg bulk-zugewiesen werden können.
-- README um sRGB/ICC-Workflow und die neue ICC-Fix-Seite erweitert.
+- Setup-Seite auf lazy geladene Demo-Bilder umgestellt (kein base64-Embedding und keine Inline-Konvertierung mehr beim Seitenaufruf).
+- Entfernte experimentelle AJAX-Seite zur massenhaften Vorab-Erzeugung von Derivaten.
+- README auf den aktuellen Stand gebracht.
 
 ## [6.0.2] - 2026-04-28
 
@@ -35,7 +37,6 @@
   - `avif_quality` (0–100, Standard 60)
   - `ua_fallback` (User-Agent-Fallback bei fehlenden expliziten Accept-Formaten)
   - `preferred_format` (`avif` oder `webp`)
-- Neues CLI-Kommando `media:negotiator:warmup` zum Vorwärmen des Media-Manager-Caches (`--type`, `--formats`, `--limit`, `--base-url`, `--dry-run`).
 - Neue Backend-Seite zur Mehrfach-Zuweisung des Negotiator-Effekts auf Media-Manager-Typen (Bulk Add/Remove, Append/Prepend).
 - Setup-Seite als 3-Panel-Ansicht überarbeitet (Server, Browser, Demo).
 - Demo-Vergleich mit Side-by-Side-Slider und Format-Auswahl ergänzt.
