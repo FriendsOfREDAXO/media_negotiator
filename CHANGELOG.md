@@ -1,5 +1,15 @@
 # Changelog
 
+## [6.1.0] - 2026-05-02
+
+### Added
+- Neuer Effekt `srgb_preprocess` zum farbverwalteten Konvertieren von Uploads mit ICC-Profilen nach sRGB vor der weiteren Media-Manager-Verarbeitung.
+- Neue Backend-Seite `ICC Fix` zur Mehrfach-Zuweisung und Entfernung des sRGB/ICC-Fix-Effekts auf mehreren Media-Manager-Typen.
+
+### Changed
+- Typen-Zuweisung in `MediaTypeManager` verallgemeinert, sodass sowohl der Negotiator-Effekt als auch der neue ICC-Fix-Effekt über denselben Verwaltungsweg bulk-zugewiesen werden können.
+- README um sRGB/ICC-Workflow und die neue ICC-Fix-Seite erweitert.
+
 ## [6.0.2] - 2026-04-28
 
 - MIME-Header korrigiert: `Content-Type` wird bei AVIF/WebP nun als `image/avif` bzw. `image/webp` gesetzt.

@@ -2,6 +2,7 @@
 
 if (rex_addon::get('media_manager')->isAvailable()) {
     rex_media_manager::addEffect(rex_effect_negotiator::class);
+    rex_media_manager::addEffect(rex_effect_srgb_preprocess::class);
 }
 
 if (rex::isBackend()) {

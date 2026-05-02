@@ -1,5 +1,5 @@
 package: media_negotiator
-version: 6.0.2
+version: 6.1.0
 name: Media Negotiator
 author: Friends of REDAXO
 supportpage: https://github.com/FriendsOfREDAXO/media_negotiator
@@ -9,12 +9,18 @@ pages:
         title: translate:media_negotiator_title
         perm: media_negotiator[]
         subpages:
-                setup:
-                    { title: translate:media_negotiator_setup_instructions_title, icon: rex-icon fa-regular fa-images }
-                config:
-                    { title: translate:media_negotiator_config_title, icon: rex-icon fa-cog }
-                types:
-                    { title: translate:media_negotiator_types_title, icon: rex-icon fa-tasks }
+            setup:
+                title: 'translate:media_negotiator_setup_instructions_title'
+                icon: 'rex-icon fa-regular fa-images'
+            config:
+                title: 'translate:media_negotiator_config_title'
+                icon: 'rex-icon fa-cog'
+            types:
+                title: 'translate:media_negotiator_types_title'
+                icon: 'rex-icon fa-tasks'
+            icc_fix:
+                title: 'translate:media_negotiator_icc_fix_title'
+                icon: 'rex-icon fa-magic'
 
 default_config:
     force_imagick: false
@@ -26,7 +32,7 @@ default_config:
 
 console:
     commands:
-        media:negotiator:warmup: FriendsOfRedaxo\MediaNegotiator\Commands\WarmupCommand
+        'media:negotiator:warmup': FriendsOfRedaxo\MediaNegotiator\Commands\WarmupCommand
 
 requires:
     redaxo: ^5.18.0

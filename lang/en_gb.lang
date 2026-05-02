@@ -6,6 +6,9 @@ media_negotiator_no = No
 
 # Effect
 media_negotiator_effect_name = Negotiate image format
+media_negotiator_effect_srgb_preprocess_name = Convert colour space to sRGB
+media_negotiator_effect_srgb_preprocess_hint_label = Note
+media_negotiator_effect_srgb_preprocess_hint_notice = Place this effect as early as possible in the effect chain. It correctly converts embedded ICC profiles, for example Adobe RGB, to sRGB and then strips metadata for web-ready derivatives.
 
 # Setup page
 media_negotiator_setup_instructions_title = Overview
@@ -103,3 +106,24 @@ media_negotiator_types_error_none_selected = Please select at least one media ty
 media_negotiator_types_confirm_remove = Remove the negotiator effect from the selected media types?
 media_negotiator_types_success_add = Effect added: %s type(s) updated, %s already present (skipped).
 media_negotiator_types_success_remove = Effect removed: %s type(s) updated, %s without effect (skipped).
+
+# ICC fix page
+media_negotiator_icc_fix_title = ICC Fix
+media_negotiator_icc_fix_section_title = Assign ICC fix effect to media types
+media_negotiator_icc_fix_description = Here you can add or remove the “Convert colour space to sRGB” effect for multiple media types at once. The effect should be placed as early as possible in the effect chain so Adobe RGB or other ICC-tagged uploads are converted correctly before later image operations run.
+media_negotiator_icc_fix_table_type = Media type
+media_negotiator_icc_fix_table_description = Description
+media_negotiator_icc_fix_table_status = ICC fix effect
+media_negotiator_icc_fix_table_effects = Effects total
+media_negotiator_icc_fix_has_effect = Active
+media_negotiator_icc_fix_no_effect = Not assigned
+media_negotiator_icc_fix_priority = Priority %s
+media_negotiator_icc_fix_fixed_position_notice = When added, the ICC fix effect is always inserted at the beginning of the effect chain.
+media_negotiator_icc_fix_action_add = Add effect
+media_negotiator_icc_fix_action_remove = Remove effect
+media_negotiator_icc_fix_select_all = Select all
+media_negotiator_icc_fix_no_types = No media types available.
+media_negotiator_icc_fix_error_none_selected = Please select at least one media type.
+media_negotiator_icc_fix_confirm_remove = Remove the ICC fix effect from the selected media types?
+media_negotiator_icc_fix_success_add = Effect added: %s type(s) updated, %s already present (skipped).
+media_negotiator_icc_fix_success_remove = Effect removed: %s type(s) updated, %s without effect (skipped).
