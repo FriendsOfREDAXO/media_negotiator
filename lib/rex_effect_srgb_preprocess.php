@@ -39,10 +39,14 @@ class rex_effect_srgb_preprocess extends rex_effect_abstract
             $sourceProfiles = $imagick->getImageProfiles('icc', true);
             $hasSourceProfile = isset($sourceProfiles['icc']) && is_string($sourceProfiles['icc']) && '' !== $sourceProfiles['icc'];
 
-            if ($hasSourceProfile) {
-                // Perform a real profile-to-profile conversion using the embedded source ICC.
-                $imagick->profileImage('icc', $srgbProfile);
+            // Without embedded source ICC there is no reliable profile conversion to do.
+            // In that case keep the original image untouched to avoid unnecessary re-encoding.
+            if (!$hasSourceProfile) {
+                return;
             }
+
+            // Perform a real profile-to-profile conversion using the embedded source ICC.
+            $imagick->profileImage('icc', $srgbProfile);
 
             // Drop metadata, then re-embed the explicit sRGB profile so browsers render
             // the derivative consistently instead of guessing an implicit colour space.
