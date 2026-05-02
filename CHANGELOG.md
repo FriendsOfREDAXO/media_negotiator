@@ -4,9 +4,11 @@
 
 ### Added
 - Neuer Effekt `srgb_preprocess` zum farbverwalteten Konvertieren von Uploads mit ICC-Profilen nach sRGB vor der weiteren Media-Manager-Verarbeitung.
+- Mitgeliefertes Zielprofil `data/icc/sRGB Profile.icc` für echte ICC-zu-sRGB-Transformation im Effekt.
 - Neue Backend-Seite `ICC Fix` zur Mehrfach-Zuweisung und Entfernung des sRGB/ICC-Fix-Effekts auf mehreren Media-Manager-Typen.
 
 ### Changed
+- `srgb_preprocess` verwendet jetzt eine echte ICC-Profiltransformation mit anschließend erneut eingebettetem sRGB-Profil statt eines einfachen Colorspace-Switches.
 - Typen-Zuweisung in `MediaTypeManager` verallgemeinert, sodass sowohl der Negotiator-Effekt als auch der neue ICC-Fix-Effekt über denselben Verwaltungsweg bulk-zugewiesen werden können.
 - README um sRGB/ICC-Workflow und die neue ICC-Fix-Seite erweitert.
 

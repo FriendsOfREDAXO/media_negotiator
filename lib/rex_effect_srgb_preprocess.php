@@ -9,6 +9,10 @@
  */
 class rex_effect_srgb_preprocess extends rex_effect_abstract
 {
+    private const SRGB_PROFILE_PATH = 'data/icc/sRGB Profile.icc';
+
+    private static ?string $srgbProfile = null;
+
     public function execute(): void
     {
         if (!class_exists(Imagick::class)) {
@@ -20,6 +24,11 @@ class rex_effect_srgb_preprocess extends rex_effect_abstract
             return;
         }
 
+        $srgbProfile = self::getSrgbProfile();
+        if (null === $srgbProfile || '' === $srgbProfile) {
+            return;
+        }
+
         try {
             $imagick = new Imagick();
             $imagick->readImageBlob($source);
@@ -27,8 +36,18 @@ class rex_effect_srgb_preprocess extends rex_effect_abstract
             // Match the core GD path: honour EXIF orientation before metadata is stripped.
             $imagick->autoOrient();
 
-            $imagick->transformImageColorspace(Imagick::COLORSPACE_SRGB);
+            $sourceProfiles = $imagick->getImageProfiles('icc', true);
+            $hasSourceProfile = isset($sourceProfiles['icc']) && is_string($sourceProfiles['icc']) && '' !== $sourceProfiles['icc'];
+
+            if ($hasSourceProfile) {
+                // Perform a real profile-to-profile conversion using the embedded source ICC.
+                $imagick->profileImage('icc', $srgbProfile);
+            }
+
+            // Drop metadata, then re-embed the explicit sRGB profile so browsers render
+            // the derivative consistently instead of guessing an implicit colour space.
             $imagick->stripImage();
+            $imagick->profileImage('icc', $srgbProfile);
 
             $converted = imagecreatefromstring($imagick->getImageBlob());
             if (false === $converted) {
@@ -60,5 +79,17 @@ class rex_effect_srgb_preprocess extends rex_effect_abstract
                 'attributes' => ['readonly' => 'readonly'],
             ],
         ];
+    }
+
+    private static function getSrgbProfile(): ?string
+    {
+        if (null !== self::$srgbProfile) {
+            return self::$srgbProfile;
+        }
+
+        $profile = rex_file::get(rex_addon::get('media_negotiator')->getPath(self::SRGB_PROFILE_PATH));
+        self::$srgbProfile = is_string($profile) && '' !== $profile ? $profile : '';
+
+        return '' === self::$srgbProfile ? null : self::$srgbProfile;
     }
 }

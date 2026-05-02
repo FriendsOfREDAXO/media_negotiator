@@ -43,11 +43,11 @@ Der Effekt arbeitet als Vorverarbeitung für Web-Derivate:
 
 1. Bild per Imagick laden
 2. EXIF-Orientierung berücksichtigen
-3. Farbverwaltet nach **sRGB** konvertieren
-4. ICC/Metadaten entfernen
+3. Eingebettetes Quell-ICC gegen ein mitgeliefertes **sRGB-ICC-Profil** transformieren
+4. Metadaten entfernen und das sRGB-Profil wieder explizit einbetten
 5. Weitere Media-Manager-Effekte auf bereits webtauglichem Material ausführen
 
-Für typische Web-Ausgaben reicht das aus. Das ICC-Profil muss danach normalerweise nicht mit ausgeliefert werden, weil die Pixel bereits korrekt nach sRGB transformiert wurden.
+Für typische Web-Ausgaben reicht das aus. Das Derivat bleibt dabei explizit als sRGB getaggt, sodass Browser es konsistent zum Original mit eingebettetem Profil rendern.
 
 Wichtig: Den ICC-Fix-Effekt in der Effektkette möglichst **vor** Resize, Crop und vor dem Negotiator-Effekt platzieren.
 

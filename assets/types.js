@@ -2,9 +2,12 @@
 (function () {
     'use strict';
 
-    document.addEventListener('DOMContentLoaded', function () {
+    function initAll() {
         var toggle = document.getElementById('mn-check-all');
         if (!toggle) { return; }
+        if (toggle.dataset.mnBound === '1') { return; }
+
+        toggle.dataset.mnBound = '1';
 
         function updateToggle() {
             var all     = document.querySelectorAll('.mn-type-check');
@@ -24,5 +27,17 @@
         });
 
         updateToggle();
-    });
+    }
+
+    if (document.readyState !== 'loading') {
+        initAll();
+    } else {
+        document.addEventListener('DOMContentLoaded', initAll);
+    }
+
+    if (window.jQuery) {
+        window.jQuery(document).on('rex:ready', function () {
+            window.setTimeout(initAll, 0);
+        });
+    }
 }());
