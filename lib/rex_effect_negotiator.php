@@ -23,15 +23,19 @@ class rex_effect_negotiator extends rex_effect_abstract
 
         if ($possibleFormat === 'avif') {
             $quality = Helper::getAvifQuality();
-            // Use Imagick when: force_imagick=true, imageavif() unavailable, or non-default quality with Imagick present
-            $useImagick = (bool) rex_config::get('media_negotiator', 'force_imagick', false)
-                || !function_exists('imageavif')
-                || ($quality !== 60 && class_exists(\Imagick::class));
+            $forceImagick = Helper::getForceImagick();
 
-            if ($useImagick) {
+            // Converter priority: vips > imagick > GD
+            $useVips = !$forceImagick && Helper::vipsPossible();
+            $useImagick = !$useVips && (
+                $forceImagick
+                || !function_exists('imageavif')
+                || ($quality !== 60 && class_exists(\Imagick::class))
+            );
+
+            if ($useVips) {
                 try {
-                    $img = $this->media->getSource();
-                    $converted = Helper::imagickConvert($img, 'avif', $quality);
+                    $converted = Helper::vipsConvert($this->media->getSource(), 'avif', $quality);
                     if ($converted === false) {
                         return;
                     }
@@ -40,7 +44,19 @@ class rex_effect_negotiator extends rex_effect_abstract
                     $this->media->setHeader('Content-Type', 'image/avif');
                     $this->media->refreshImageDimensions();
                 } catch (\Exception $e) {
-                    // Conversion failed (e.g. timeout, memory limit) – deliver original
+                    return;
+                }
+            } elseif ($useImagick) {
+                try {
+                    $converted = Helper::imagickConvert($this->media->getSource(), 'avif', $quality);
+                    if ($converted === false) {
+                        return;
+                    }
+                    $this->media->setImage($converted);
+                    $this->media->setFormat('avif');
+                    $this->media->setHeader('Content-Type', 'image/avif');
+                    $this->media->refreshImageDimensions();
+                } catch (\Exception $e) {
                     return;
                 }
             } else {
@@ -51,14 +67,18 @@ class rex_effect_negotiator extends rex_effect_abstract
             }
         } elseif ($possibleFormat === 'webp') {
             $quality = Helper::getWebpQuality();
-            $useImagick = (bool) rex_config::get('media_negotiator', 'force_imagick', false)
-                || !function_exists('imagewebp')
-                || ($quality !== 80 && class_exists(\Imagick::class));
+            $forceImagick = Helper::getForceImagick();
 
-            if ($useImagick) {
+            $useVips = !$forceImagick && Helper::vipsPossible();
+            $useImagick = !$useVips && (
+                $forceImagick
+                || !function_exists('imagewebp')
+                || ($quality !== 80 && class_exists(\Imagick::class))
+            );
+
+            if ($useVips) {
                 try {
-                    $img = $this->media->getSource();
-                    $converted = Helper::imagickConvert($img, 'webp', $quality);
+                    $converted = Helper::vipsConvert($this->media->getSource(), 'webp', $quality);
                     if ($converted === false) {
                         return;
                     }
@@ -67,7 +87,19 @@ class rex_effect_negotiator extends rex_effect_abstract
                     $this->media->setHeader('Content-Type', 'image/webp');
                     $this->media->refreshImageDimensions();
                 } catch (\Exception $e) {
-                    // Conversion failed – deliver original
+                    return;
+                }
+            } elseif ($useImagick) {
+                try {
+                    $converted = Helper::imagickConvert($this->media->getSource(), 'webp', $quality);
+                    if ($converted === false) {
+                        return;
+                    }
+                    $this->media->setImage($converted);
+                    $this->media->setFormat('webp');
+                    $this->media->setHeader('Content-Type', 'image/webp');
+                    $this->media->refreshImageDimensions();
+                } catch (\Exception $e) {
                     return;
                 }
             } else {

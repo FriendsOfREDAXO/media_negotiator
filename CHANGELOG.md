@@ -1,5 +1,16 @@
 # Changelog
 
+## [6.1.3] - 2026-05-04
+
+### Added
+- **libvips-Support**: Wenn die PHP-Extension `vips` installiert ist, wird sie automatisch bevorzugt eingesetzt (Priorität: vips › imagick › GD). libvips ist 3–8× schneller als Imagick und benötigt rund 10× weniger Arbeitsspeicher, da es im Streaming-Verfahren arbeitet statt das gesamte Bild in den RAM zu laden.
+- `Helper::vipsPossible()`: Erkennt ob die vips-Extension verfügbar ist.
+- `Helper::vipsConvert()`: Konvertiert einen Image-Blob via libvips zu WebP oder AVIF.
+- `Helper::vipsSrgbConvert()`: Transformiert ICC-Profile nativ via libvips – schneller und vollständiger als die bisherige Imagick-Lösung.
+- `Helper::getForceImagick()`: Extrahiert die `force_imagick`-Config in eine eigene Methode.
+- Setup-Seite zeigt libvips-Status und -Version an.
+- Hinweis in der Setup-Übersicht wenn libvips aktiv ist.
+
 ## [6.1.2] - 2026-05-04
 
 ### Performance

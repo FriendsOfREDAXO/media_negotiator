@@ -29,8 +29,25 @@ class rex_effect_srgb_preprocess extends rex_effect_abstract
             return;
         }
 
-        $imagick = new Imagick();
         try {
+            // Converter priority: vips > imagick
+            // vips handles ICC profiles natively and is faster / uses less memory.
+            if (\FriendsOfRedaxo\MediaNegotiator\Helper::vipsPossible()) {
+                $srgbProfilePath = rex_addon::get('media_negotiator')->getPath(self::SRGB_PROFILE_PATH);
+                $converted = \FriendsOfRedaxo\MediaNegotiator\Helper::vipsSrgbConvert($source, $srgbProfilePath);
+                if (false === $converted) {
+                    return; // no embedded ICC or conversion failed – keep original
+                }
+                $this->media->setImage($converted);
+                $this->media->refreshImageDimensions();
+                return;
+            }
+
+            if (!class_exists(Imagick::class)) {
+                return;
+            }
+
+            $imagick = new Imagick();
             $imagick->readImageBlob($source);
 
             // Match the core GD path: honour EXIF orientation before metadata is stripped.

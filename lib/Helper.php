@@ -149,6 +149,7 @@ class Helper
     private static ?bool $avifDisabledCache = null;
     private static ?bool $webpPossibleCache = null;
     private static ?bool $avifPossibleCache = null;
+    private static ?bool $vipsPossibleCache = null;
     private static ?array $gdInfoCache = null;
     /** Resolved output format for the current request (keyed by Accept header). */
     private static ?string $resolvedFormatCache = null;
@@ -227,7 +228,9 @@ class Helper
         $imagickFormats = self::getImagickFormats();
         $viaGd      = function_exists('imagewebp') && self::gdSupportsWebp();
         $viaImagick = in_array('WEBP', $imagickFormats, true);
-        self::$webpPossibleCache = $viaGd || $viaImagick;
+        // libvips always supports WebP when the extension is available
+        $viaVips    = self::vipsPossible();
+        self::$webpPossibleCache = $viaGd || $viaImagick || $viaVips;
         return self::$webpPossibleCache;
     }
 
@@ -243,8 +246,31 @@ class Helper
         $imagickFormats = self::getImagickFormats();
         $viaGd      = function_exists('imageavif') && self::gdSupportsAvif();
         $viaImagick = in_array('AVIF', $imagickFormats, true);
-        self::$avifPossibleCache = $viaGd || $viaImagick;
+        // libvips >= 8.9 supports AVIF via libheif
+        $viaVips    = self::vipsPossible();
+        self::$avifPossibleCache = $viaGd || $viaImagick || $viaVips;
         return self::$avifPossibleCache;
+    }
+
+    /**
+     * Returns true when the PHP vips extension is available.
+     * libvips is significantly faster and uses much less memory than Imagick.
+     */
+    public static function vipsPossible(): bool
+    {
+        if (null !== self::$vipsPossibleCache) {
+            return self::$vipsPossibleCache;
+        }
+        self::$vipsPossibleCache = function_exists('vips_image_new_from_buffer');
+        return self::$vipsPossibleCache;
+    }
+
+    /**
+     * Returns true when Imagick is forced via config (regardless of vips availability).
+     */
+    public static function getForceImagick(): bool
+    {
+        return (bool) rex_config::get('media_negotiator', 'force_imagick', false);
     }
 
     public static function gdSupportsWebp(): bool
@@ -292,6 +318,79 @@ class Helper
         self::$resolvedFormatCacheKey = $acceptHeader;
         self::$resolvedFormatCache = $format;
         return $format;
+    }
+
+    /**
+     * Convert a raw image blob via libvips to a GdImage.
+     * libvips is faster and uses far less memory than Imagick.
+     * Returns false when vips is unavailable or conversion fails.
+     */
+    public static function vipsConvert(string $blob, string $targetFormat, int $quality = -1): \GdImage|false
+    {
+        if (!self::vipsPossible()) {
+            return false;
+        }
+
+        $result = vips_image_new_from_buffer($blob, '');
+        if (!is_array($result) || isset($result['error']) || !isset($result['out'])) {
+            return false;
+        }
+
+        $options = [];
+        if ($quality >= 0) {
+            $options['Q'] = $quality;
+        }
+
+        $out = vips_image_write_to_buffer($result['out'], '.' . $targetFormat, $options);
+        if (!is_array($out) || isset($out['error']) || !isset($out['buffer'])) {
+            return false;
+        }
+
+        return imagecreatefromstring($out['buffer']);
+    }
+
+    /**
+     * Convert an image blob to sRGB colour space via libvips ICC transform.
+     * Returns a GdImage on success, false when vips is unavailable, has no
+     * embedded ICC profile, or the transform fails.
+     *
+     * @param string $srgbProfilePath Absolute path to the sRGB ICC profile file.
+     */
+    public static function vipsSrgbConvert(string $blob, string $srgbProfilePath): \GdImage|false
+    {
+        if (!self::vipsPossible()) {
+            return false;
+        }
+
+        $result = vips_image_new_from_buffer($blob, '');
+        if (!is_array($result) || isset($result['error']) || !isset($result['out'])) {
+            return false;
+        }
+
+        $image = $result['out'];
+
+        // Check for embedded ICC profile
+        $iccCheck = vips_call('get', $image, 'icc-profile-data');
+        if (!is_array($iccCheck) || isset($iccCheck['error'])) {
+            return false; // No embedded profile – nothing to convert
+        }
+
+        // Transform to sRGB using the embedded source profile
+        $transformed = vips_call('icc_transform', $image, $srgbProfilePath, [
+            'embedded' => true,
+            'intent'   => 'perceptual',
+        ]);
+        if (!is_array($transformed) || isset($transformed['error']) || !isset($transformed['out'])) {
+            return false;
+        }
+
+        // Write as PNG for a lossless in-memory intermediate; GD handles final encoding
+        $out = vips_image_write_to_buffer($transformed['out'], '.png');
+        if (!is_array($out) || isset($out['error']) || !isset($out['buffer'])) {
+            return false;
+        }
+
+        return imagecreatefromstring($out['buffer']);
     }
 
     /**

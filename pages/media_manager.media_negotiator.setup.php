@@ -35,6 +35,13 @@ if ($imagickAvailable) {
     $imagickWebp    = in_array('WEBP', $formats, true);
     $imagickAvif    = in_array('AVIF', $formats, true);
     $imagickVersion = Imagick::getVersion()['versionString'];
+    $imagickObj->destroy();
+}
+
+$vipsAvailable = Helper::vipsPossible();
+$vipsVersion   = '';
+if ($vipsAvailable && function_exists('vips_version')) {
+    $vipsVersion = (string) vips_version();
 }
 
 $gdImagewebp = function_exists('imagewebp');
@@ -109,6 +116,23 @@ ob_start(); ?>
             <li class="list-group-item" style="padding:8px 12px">
                 <i class="fa fa-info-circle text-muted" aria-hidden="true"></i>
                 <small class="text-muted"><?= rex_escape($imagickVersion) ?></small>
+            </li>
+            <?php endif; ?>
+        </ul>
+
+        <h5><?= rex_i18n::msg('media_negotiator_setup_server_vips') ?></h5>
+        <ul class="list-group">
+            <?= $statusRow($vipsAvailable, rex_i18n::msg('media_negotiator_setup_vips_installed')) ?>
+            <?php if ($vipsVersion !== ''): ?>
+            <li class="list-group-item" style="padding:8px 12px">
+                <i class="fa fa-info-circle text-muted" aria-hidden="true"></i>
+                <small class="text-muted"><?= rex_i18n::msg('media_negotiator_setup_vips_version') ?>: <?= rex_escape($vipsVersion) ?></small>
+            </li>
+            <?php endif; ?>
+            <?php if ($vipsAvailable): ?>
+            <li class="list-group-item" style="padding:8px 12px">
+                <i class="fa fa-bolt text-success" aria-hidden="true"></i>
+                <small class="text-success"><?= rex_i18n::msg('media_negotiator_setup_vips_active_hint') ?></small>
             </li>
             <?php endif; ?>
         </ul>
