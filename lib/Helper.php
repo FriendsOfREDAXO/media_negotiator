@@ -172,6 +172,9 @@ class Helper
         return (bool) rex_config::get('media_negotiator', 'disable_avif', false);
     }
 
+    /** @var list<string>|null */
+    private static ?array $imagickFormatsCache = null;
+
     /**
      * @return list<string>
      */
@@ -180,8 +183,13 @@ class Helper
         if (!class_exists(\Imagick::class)) {
             return [];
         }
+        if (null !== self::$imagickFormatsCache) {
+            return self::$imagickFormatsCache;
+        }
         $imagick = new \Imagick();
-        return $imagick->queryFormats();
+        self::$imagickFormatsCache = $imagick->queryFormats();
+        $imagick->destroy();
+        return self::$imagickFormatsCache;
     }
 
     public static function webpPossible(): bool
@@ -232,11 +240,17 @@ class Helper
     public static function imagickConvert(string $gdImage, string $targetFormat, int $quality = -1): \GdImage|false
     {
         $imagick = new Imagick();
-        $imagick->readImageBlob($gdImage);
-        $imagick->setImageFormat($targetFormat);
-        if ($quality >= 0) {
-            $imagick->setImageCompressionQuality($quality);
+        try {
+            $imagick->readImageBlob($gdImage);
+            $imagick->setImageFormat($targetFormat);
+            if ($quality >= 0) {
+                $imagick->setImageCompressionQuality($quality);
+            }
+            $blob = $imagick->getImageBlob();
+        } finally {
+            $imagick->clear();
+            $imagick->destroy();
         }
-        return imagecreatefromstring($imagick->getImageBlob());
+        return imagecreatefromstring($blob);
     }
 }

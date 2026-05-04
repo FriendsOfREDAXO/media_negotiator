@@ -29,8 +29,8 @@ class rex_effect_srgb_preprocess extends rex_effect_abstract
             return;
         }
 
+        $imagick = new Imagick();
         try {
-            $imagick = new Imagick();
             $imagick->readImageBlob($source);
 
             // Match the core GD path: honour EXIF orientation before metadata is stripped.
@@ -53,7 +53,8 @@ class rex_effect_srgb_preprocess extends rex_effect_abstract
             $imagick->stripImage();
             $imagick->profileImage('icc', $srgbProfile);
 
-            $converted = imagecreatefromstring($imagick->getImageBlob());
+            $blob = $imagick->getImageBlob();
+            $converted = imagecreatefromstring($blob);
             if (false === $converted) {
                 return;
             }
@@ -62,6 +63,9 @@ class rex_effect_srgb_preprocess extends rex_effect_abstract
             $this->media->refreshImageDimensions();
         } catch (Throwable) {
             // Best-effort preprocessor: on failure keep the original image unchanged.
+        } finally {
+            $imagick->clear();
+            $imagick->destroy();
         }
     }
 

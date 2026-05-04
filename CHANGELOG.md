@@ -1,5 +1,11 @@
 # Changelog
 
+## [6.1.1] - 2026-05-04
+
+### Fixed
+- Imagick-Speicherleck behoben: `Imagick::destroy()` wird nun nach jeder Konvertierung in `imagickConvert()` und im `srgb_preprocess`-Effekt explizit aufgerufen, da Imagick nativen C-Heap-Speicher hält, den der PHP-Garbage-Collector nicht automatisch freigibt.
+- `getImagickFormats()` cacht das Ergebnis jetzt prozessweit in `$imagickFormatsCache`, sodass pro Request nur noch eine einzige `Imagick`-Instanz erzeugt wird (statt einer pro `webpPossible()`/`avifPossible()`-Aufruf).
+
 ## [6.1.0] - 2026-05-02
 
 ### Added
