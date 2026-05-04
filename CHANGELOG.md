@@ -1,12 +1,20 @@
 # Changelog
 
+## [6.1.4] - 2026-05-04
+
+### Changed
+- Die Architektur ist jetzt bewusst getrennt: Der Negotiator verwendet fuer AVIF/WebP automatisch **libvips > Imagick > GD**, waehrend der Effekt `srgb_preprocess` fuer ICC-zu-sRGB-Konvertierungen wieder ausschliesslich auf **Imagick** setzt.
+- README auf den tatsaechlichen Stand gebracht: libvips wird nur fuer den Negotiator beschrieben, nicht mehr fuer den ICC-Fix.
+
+### Fixed
+- Dokumentation und Changelog korrigiert: Der vorherige Eintrag zu `6.1.3` suggerierte faelschlich einen aktiven vips-basierten ICC-Fix-Pfad. Tatsaechlich bleibt der farbkritische ICC-Workflow wieder auf dem bewaehrten Imagick-Pfad.
+
 ## [6.1.3] - 2026-05-04
 
 ### Added
 - **libvips-Support**: Wenn die PHP-Extension `vips` installiert ist, wird sie automatisch bevorzugt eingesetzt (Priorität: vips › imagick › GD). libvips ist 3–8× schneller als Imagick und benötigt rund 10× weniger Arbeitsspeicher, da es im Streaming-Verfahren arbeitet statt das gesamte Bild in den RAM zu laden.
 - `Helper::vipsPossible()`: Erkennt ob die vips-Extension verfügbar ist.
 - `Helper::vipsConvert()`: Konvertiert einen Image-Blob via libvips zu WebP oder AVIF.
-- `Helper::vipsSrgbConvert()`: Transformiert ICC-Profile nativ via libvips – schneller und vollständiger als die bisherige Imagick-Lösung.
 - `Helper::getForceImagick()`: Extrahiert die `force_imagick`-Config in eine eigene Methode.
 - Setup-Seite zeigt libvips-Status und -Version an.
 - Hinweis in der Setup-Übersicht wenn libvips aktiv ist.
