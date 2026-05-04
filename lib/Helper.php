@@ -369,23 +369,50 @@ class Helper
 
         $image = $result['out'];
 
-        // Check for embedded ICC profile
-        $iccCheck = vips_call('get', $image, 'icc-profile-data');
-        if (!is_array($iccCheck) || isset($iccCheck['error'])) {
-            return false; // No embedded profile – nothing to convert
+        // Apply EXIF orientation (equivalent to Imagick::autoOrient)
+        $rotated = vips_call('autorot', $image);
+        if (is_array($rotated) && !isset($rotated['error']) && isset($rotated['out'])) {
+            $image = $rotated['out'];
         }
 
-        // Transform to sRGB using the embedded source profile
+        // Check for embedded ICC profile
+        $iccCheck = vips_call('get', $image, 'icc-profile-data');
+        $hasIcc = is_array($iccCheck) && !isset($iccCheck['error']) && isset($iccCheck['out']);
+
+        $hasAlphaResult = vips_call('hasalpha', $image);
+        $hasAlpha = is_array($hasAlphaResult) && !isset($hasAlphaResult['error']) && !empty($hasAlphaResult['out']);
+
+        if (!$hasIcc) {
+            // No profile to convert – but we still return the autorotated image.
+            // Prefer JPEG to mirror the Imagick path and avoid PNG gamma shifts.
+            $out = vips_image_write_to_buffer(
+                $image,
+                $hasAlpha ? '.png' : '.jpg',
+                $hasAlpha ? ['strip' => true] : ['Q' => 100, 'strip' => true],
+            );
+            if (!is_array($out) || isset($out['error']) || !isset($out['buffer'])) {
+                return false;
+            }
+            return imagecreatefromstring($out['buffer']);
+        }
+
+        // Transform to sRGB using the embedded source profile.
+        // intent: 0 = perceptual (matches Imagick default)
         $transformed = vips_call('icc_transform', $image, $srgbProfilePath, [
             'embedded' => true,
-            'intent'   => 'perceptual',
+            'intent'   => 0,
         ]);
         if (!is_array($transformed) || isset($transformed['error']) || !isset($transformed['out'])) {
             return false;
         }
 
-        // Write as PNG for a lossless in-memory intermediate; GD handles final encoding
-        $out = vips_image_write_to_buffer($transformed['out'], '.png');
+        // Strip all metadata before handing pixels to GD. For opaque images prefer
+        // JPEG here to mirror the Imagick path more closely and avoid PNG gamma shifts.
+        $out = vips_image_write_to_buffer(
+            $transformed['out'],
+            $hasAlpha ? '.png' : '.jpg',
+            $hasAlpha ? ['strip' => true] : ['Q' => 100, 'strip' => true],
+        );
         if (!is_array($out) || isset($out['error']) || !isset($out['buffer'])) {
             return false;
         }

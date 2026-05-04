@@ -2,11 +2,14 @@
 
 REDAXO-Addon, das dem Media Manager einen Effekt für **HTTP Content Negotiation** hinzufügt. Der Browser teilt dem Server über den `Accept`-Header mit, welche Bildformate er unterstützt – Media Negotiator liefert daraufhin automatisch das optimale Format aus.
 
+Jetzt mit **libvips**-Support: Wenn die PHP-Extension `vips` installiert ist, wird sie automatisch bevorzugt eingesetzt und ist der deutlich schnellere und speicherfreundlichere Weg zu AVIF und WebP auf dem Server.
+
 ---
 
 ## Inhaltsverzeichnis
 
 - [Funktionsweise](#funktionsweise)
+- [libvips – der schnelle Weg](#libvips--der-schnelle-weg)
 - [ICC-Fix und sRGB-Workflow](#icc-fix-und-srgb-workflow)
 - [Unterstützte Formate](#unterstützte-formate)
 - [Voraussetzungen](#voraussetzungen)
@@ -28,9 +31,43 @@ Der Effekt „Negotiate image format" liest den `Accept`-Header des Browsers und
 2. **WebP** – falls Browser und Server WebP unterstützen
 3. **Original** – als Fallback ohne Konvertierung
 
-Die Konvertierung erfolgt entweder über GD (Standard) oder Imagick (konfigurierbar). Der Media Manager Cache wird je Format getrennt verwaltet, sodass Bilder nicht doppelt konvertiert werden.
+Die Konvertierung erfolgt automatisch mit der besten verfügbaren Bibliothek (Priorität: **libvips › Imagick › GD**). Der Media Manager Cache wird je Format getrennt verwaltet, sodass Bilder nicht doppelt konvertiert werden.
 
 Weitere Informationen zu HTTP Content Negotiation: [MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/HTTP/Content_negotiation)
+
+---
+
+## libvips – der schnelle Weg
+
+[libvips](https://www.libvips.org/) ist eine Bildverarbeitungsbibliothek, die für den Einsatz auf Webservern entwickelt wurde. Im Vergleich zu Imagick (ImageMagick) zeigt sie in der Praxis deutliche Vorteile:
+
+| Merkmal | Imagick | libvips |
+|---|---|---|
+| **Speicherbedarf** | Lädt das gesamte Bild in den RAM | Streaming-Pipeline – ca. **10× weniger RAM** |
+| **Geschwindigkeit** | Mittel | **3–8× schneller** bei AVIF/WebP-Erzeugung |
+| **Memory-Leaks** | Bekanntes Problem (nativer C-Heap) | Kein vergleichbarer Overhead |
+| **AVIF / WebP** | ✓ (Codec-Abhängig) | ✓ |
+| **ICC-Profile** | ✓ | ✓ (nativ via `icc_transform`) |
+
+Gerade bei **vielen parallelen Requests** oder **großen Bildern** macht sich der Unterschied deutlich bemerkbar: Imagick lädt das Bild komplett in den PHP-Prozess-Speicher, libvips streamt es in Kacheln durch die Pipeline und schreibt direkt in das Zielformat. Das ist der Hauptgrund warum es unter Last zu Speicherüberlaufen und Server-Abstürzen kommen kann, wenn Imagick für Massenoperationen eingesetzt wird.
+
+### libvips installieren (Ubuntu / Plesk)
+
+```bash
+# Systembibliothek
+apt-get install -y libvips-dev libvips42
+
+# PHP-Extension via PECL
+pecl install vips
+echo "extension=vips.so" > /etc/php/8.3/mods-available/vips.ini
+phpenmod -v 8.3 vips
+service php8.3-fpm restart
+
+# Prüfen
+php8.3 -r "echo vips_version() . PHP_EOL;"
+```
+
+Sobald die Extension aktiv ist, verwendet Media Negotiator libvips automatisch – keine weitere Konfiguration nötig. Der Status wird auf der **Setup-Seite** angezeigt.
 
 ---
 
@@ -40,7 +77,7 @@ Zusätzlich zum Negotiator-Effekt bringt das Addon den Effekt **„Farbraum nach
 
 Der Effekt arbeitet als Vorverarbeitung für Web-Derivate:
 
-1. Bild per Imagick laden
+1. Bild laden (via libvips oder Imagick)
 2. EXIF-Orientierung berücksichtigen
 3. Eingebettetes Quell-ICC gegen ein mitgeliefertes **sRGB-ICC-Profil** transformieren
 4. Metadaten entfernen und das sRGB-Profil wieder explizit einbetten
@@ -54,10 +91,10 @@ Wichtig: Den ICC-Fix-Effekt in der Effektkette möglichst **vor** Resize, Crop u
 
 ## Unterstützte Formate
 
-| Format | GD                     | Imagick              |
-|--------|------------------------|----------------------|
-| WebP   | `imagewebp()` + GD-Flag | `WEBP`-Codec nötig  |
-| AVIF   | `imageavif()` + GD-Flag | `AVIF`-Codec nötig  |
+| Format | libvips | GD                     | Imagick              |
+|--------|---------|------------------------|----------------------|
+| WebP   | ✓       | `imagewebp()` + GD-Flag | `WEBP`-Codec nötig  |
+| AVIF   | ✓       | `imageavif()` + GD-Flag | `AVIF`-Codec nötig  |
 
 ---
 
@@ -66,7 +103,10 @@ Wichtig: Den ICC-Fix-Effekt in der Effektkette möglichst **vor** Resize, Crop u
 - REDAXO ≥ 5.18.0
 - PHP ≥ 8.1
 - Media Manager Addon ≥ 2.17.0
-- GD mit WebP- und/oder AVIF-Unterstützung **oder** Imagick mit entsprechenden Codecs
+- Eines der folgenden (in Prioritätsreihenfolge):
+  - **libvips** PHP-Extension (`pecl install vips`) – empfohlen
+  - **Imagick** mit WebP/AVIF-Codec
+  - **GD** mit WebP- und/oder AVIF-Unterstützung
 
 ---
 
