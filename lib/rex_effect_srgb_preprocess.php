@@ -20,21 +20,6 @@ class rex_effect_srgb_preprocess extends rex_effect_abstract
             return;
         }
 
-        // Converter priority: vips > imagick
-        if (\FriendsOfRedaxo\MediaNegotiator\Helper::vipsPossible()) {
-            $srgbProfilePath = rex_addon::get('media_negotiator')->getPath(self::SRGB_PROFILE_PATH);
-            try {
-                $converted = \FriendsOfRedaxo\MediaNegotiator\Helper::vipsSrgbConvert($source, $srgbProfilePath);
-                if (false !== $converted) {
-                    $this->media->setImage($converted);
-                    $this->media->refreshImageDimensions();
-                }
-            } catch (Throwable) {
-                // Best-effort: keep original on failure
-            }
-            return;
-        }
-
         if (!class_exists(Imagick::class)) {
             return;
         }

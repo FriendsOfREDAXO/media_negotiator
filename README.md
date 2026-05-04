@@ -75,9 +75,11 @@ Sobald die Extension aktiv ist, verwendet Media Negotiator libvips automatisch �
 
 Zusätzlich zum Negotiator-Effekt bringt das Addon den Effekt **„Farbraum nach sRGB konvertieren"** mit. Er ist für Uploads gedacht, die mit eingebettetem ICC-Profil kommen, zum Beispiel Adobe RGB aus Kameras oder Bildbearbeitung.
 
+Der Effekt arbeitet als Vorverarbeitung für Web-Derivate und verwendet bewusst weiter **ImageMagick/Imagick** für die ICC-Profiltransformation. Der Negotiator selbst darf für AVIF/WebP automatisch **libvips** bevorzugen, aber die eigentliche Farbraumkonvertierung bleibt auf dem bewährten Imagick-Pfad, da dieser in der Praxis bei eingebetteten ICC-Profilen die zuverlässigeren und visuell näher am Original liegenden Ergebnisse liefert.
+
 Der Effekt arbeitet als Vorverarbeitung für Web-Derivate:
 
-1. Bild laden (via libvips oder Imagick)
+1. Bild per Imagick laden
 2. EXIF-Orientierung berücksichtigen
 3. Eingebettetes Quell-ICC gegen ein mitgeliefertes **sRGB-ICC-Profil** transformieren
 4. Metadaten entfernen und das sRGB-Profil wieder explizit einbetten
