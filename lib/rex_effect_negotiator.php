@@ -51,9 +51,16 @@ class rex_effect_negotiator extends rex_effect_abstract
             return;
         }
 
-        $sourceBlob = file_get_contents($this->media->getMediaPath() ?? '') ?: null;
-        if ($sourceBlob === null) {
-            return; // Cannot read source file
+        // Use current effect-chain output as source (not original file path),
+        // so resize/crop/content_builder transformations are preserved.
+        try {
+            $sourceBlob = $this->media->getSource();
+        } catch (\Throwable) {
+            return;
+        }
+
+        if ($sourceBlob === '') {
+            return;
         }
 
         // Try converters in order: vips → imagick → original
