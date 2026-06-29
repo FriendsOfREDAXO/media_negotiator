@@ -6,9 +6,6 @@
 - **Focus-Point-Crop bleibt bei WebP/AVIF erhalten**: `rex_effect_negotiator` verwendet in `convertWithFallback()` jetzt die aktuell prozessierte Quelle aus der Effektkette (`$this->media->getSource()`) statt den Original-Dateipfad (`getMediaPath()`).
 - Damit gehen Crops aus vorgeschalteten Effekten (z. B. Focus-Point-Fit) bei ausgehandelten Formaten nicht mehr verloren.
 
-## [6.2.1] - 2026-06-25
-
-### Fixed
 - **Converter-Kette vereinfacht**: vips und Imagick geben nun direkt den konvertierten Bild-Blob zurück (statt `GdImage`), womit der GD-Fallback entfällt. Fallback bei fehlschlagenden Konvertern ist jetzt das Original-Format (JPEG/PNG).
 - `Helper::vipsConvert()` und `Helper::imagickConvert()` liefern `string|false` statt `GdImage|false` – GD wird nicht mehr zum Dekodieren der Converter-Ausgabe verwendet.
 - `rex_effect_negotiator` nutzt eine `convertWithFallback()`-Methode mit `try/catch(\Throwable)`, um Converter-Fehler abzufangen ohne den Media-Request zu blockieren.
