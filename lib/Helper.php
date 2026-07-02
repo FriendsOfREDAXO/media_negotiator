@@ -497,9 +497,9 @@ class Helper
 
             ob_start();
             if ('avif' === $targetFormat) {
-                $ok = imageavif($img, null, $quality >= 0 ? $quality : 60);
+                $ok = imageavif($img, null, $quality >= 0 ? $quality : -1);
             } else {
-                $ok = imagewebp($img, null, $quality >= 0 ? $quality : 80);
+                $ok = imagewebp($img, null, $quality >= 0 ? $quality : -1);
             }
             $out = ob_get_clean();
 
