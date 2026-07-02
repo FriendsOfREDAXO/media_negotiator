@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+- **AVIF-Qualität wird auf betroffenen ImageMagick-Builds respektiert**: Für AVIF wird nun GD (`imageavif`) vor Imagick versucht. Mehrere ImageMagick-Builds (mit bestimmten libheif/libaom-Versionen) ignorieren die AVIF-Kompressionsqualität komplett und liefern unabhängig vom eingestellten Wert immer eine stark überkomprimierte Datei; GD setzt die Qualität korrekt um. Für WebP bleibt Imagick bevorzugt.
+
+### Added
+- `Helper::gdConvert()` als dritter Converter neben vips und Imagick. Damit können Server, auf denen nur GD verfügbar ist (kein vips, kein Imagick), wieder AVIF/WebP erzeugen.
+
 ## [6.2.2] - 2026-06-29
 
 ### Fixed

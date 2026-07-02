@@ -63,8 +63,16 @@ class rex_effect_negotiator extends rex_effect_abstract
             return;
         }
 
-        // Try converters in order: vips → imagick → original
-        $converters = ['vips', 'imagick'];
+        // Converter order.
+        // For AVIF, GD is tried before Imagick: several ImageMagick builds (backed
+        // by certain libheif/libaom versions) ignore the AVIF compression quality
+        // entirely and always emit a heavily over-compressed file, whereas GD's
+        // imageavif() honours the quality. For WebP, Imagick is kept first (its
+        // WebP quality works reliably). GD also acts as a fallback on servers that
+        // only ship GD (no vips, no Imagick), where previously nothing converted.
+        $converters = ($targetFormat === 'avif')
+            ? ['vips', 'gd', 'imagick']
+            : ['vips', 'imagick', 'gd'];
 
         foreach ($converters as $converter) {
             $result = false;
@@ -72,6 +80,19 @@ class rex_effect_negotiator extends rex_effect_abstract
             if ($converter === 'vips' && Helper::vipsPossible()) {
                 try {
                     $result = Helper::vipsConvert($sourceBlob, $targetFormat, $quality);
+                    if (is_string($result)) {
+                        // Blob output - write to temp and set as source path
+                        $this->setSourceFromBlob($result, $targetFormat);
+                        return;
+                    }
+                } catch (\Throwable) {
+                    // Continue to next converter
+                }
+            }
+
+            if ($converter === 'gd') {
+                try {
+                    $result = Helper::gdConvert($sourceBlob, $targetFormat, $quality);
                     if (is_string($result)) {
                         // Blob output - write to temp and set as source path
                         $this->setSourceFromBlob($result, $targetFormat);
@@ -96,7 +117,7 @@ class rex_effect_negotiator extends rex_effect_abstract
             }
         }
 
-        // All converters failed, keep original image (no GD fallback)
+        // All converters failed, keep original image
     }
 
     private function setSourceFromBlob(string $blob, string $format): void

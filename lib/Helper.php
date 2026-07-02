@@ -455,4 +455,57 @@ class Helper
             $imagick->destroy();
         }
     }
+
+    /**
+     * Convert an image blob to AVIF/WebP using GD.
+     *
+     * GD is a valuable third converter next to vips and Imagick:
+     *
+     *  - On servers that only ship GD (no vips, no Imagick) it is currently the
+     *    only way to produce AVIF/WebP at all – previously nothing converted.
+     *  - For AVIF it is often the more reliable choice: several ImageMagick
+     *    builds backed by certain libheif/libaom versions IGNORE the compression
+     *    quality entirely (every quality level yields the same, heavily
+     *    over-compressed file), whereas GD's imageavif() honours the quality
+     *    parameter across the full range.
+     *
+     * @param string $blob         Raw image data (already resized by the effect chain)
+     * @param string $targetFormat 'avif' or 'webp'
+     * @param int    $quality      0–100, or -1 for the encoder default
+     */
+    public static function gdConvert(string $blob, string $targetFormat, int $quality = -1): string|false
+    {
+        if ('avif' === $targetFormat && (!function_exists('imageavif') || !self::gdSupportsAvif())) {
+            return false;
+        }
+        if ('webp' === $targetFormat && !function_exists('imagewebp')) {
+            return false;
+        }
+        if (!in_array($targetFormat, ['avif', 'webp'], true)) {
+            return false;
+        }
+
+        $img = @imagecreatefromstring($blob);
+        if (false === $img) {
+            return false;
+        }
+
+        try {
+            imagepalettetotruecolor($img);
+            imagealphablending($img, false);
+            imagesavealpha($img, true);
+
+            ob_start();
+            if ('avif' === $targetFormat) {
+                $ok = imageavif($img, null, $quality >= 0 ? $quality : -1);
+            } else {
+                $ok = imagewebp($img, null, $quality >= 0 ? $quality : -1);
+            }
+            $out = ob_get_clean();
+
+            return ($ok && is_string($out) && '' !== $out) ? $out : false;
+        } finally {
+            imagedestroy($img);
+        }
+    }
 }
