@@ -41,12 +41,7 @@ if ($avifDisabled) {
 $field->setNotice($avifPipelineNotice);
 $select = $field->getSelect();
 $rawMsg = static function (string $key): string {
-	if (method_exists(rex_i18n::class, 'rawMsg')) {
-		/** @phpstan-ignore-next-line */
-		return rex_i18n::rawMsg($key);
-	}
-
-	return html_entity_decode(rex_i18n::msg($key), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+	return rex_i18n::rawMsg($key);
 };
 
 $select->addOption($rawMsg('media_negotiator_config_avif_converter_preference_auto'), 'auto');
@@ -78,12 +73,9 @@ $fragment->setVar('body', $form->get(), false);
 echo $fragment->parse('core/page/section.php');
 
 $scriptNonceAttr = '';
-if (method_exists(rex_response::class, 'getNonce')) {
-	/** @phpstan-ignore-next-line */
-	$nonce = (string) rex_response::getNonce();
-	if ($nonce !== '') {
-		$scriptNonceAttr = ' nonce="' . rex_escape($nonce) . '"';
-	}
+$nonce = (string) rex_response::getNonce();
+if ($nonce !== '') {
+	$scriptNonceAttr = ' nonce="' . rex_escape($nonce) . '"';
 }
 
 ?>

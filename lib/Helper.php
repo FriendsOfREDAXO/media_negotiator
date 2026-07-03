@@ -158,6 +158,7 @@ class Helper
     private static ?bool $webpPossibleCache = null;
     private static ?bool $avifPossibleCache = null;
     private static ?bool $vipsPossibleCache = null;
+    /** @var array<string, mixed>|null */
     private static ?array $gdInfoCache = null;
     /** Resolved output format for the current request (keyed by Accept header). */
     private static ?string $resolvedFormatCache = null;
@@ -558,8 +559,7 @@ class Helper
             if ($quality >= 0) {
                 $imagick->setImageCompressionQuality($quality);
             }
-            $result = $imagick->getImageBlob();
-            return is_string($result) ? $result : false;
+            return $imagick->getImageBlob();
         } finally {
             $imagick->clear();
             $imagick->destroy();
