@@ -7,6 +7,16 @@
 
 ### Added
 - `Helper::gdConvert()` als dritter Converter neben vips und Imagick. Damit können Server, auf denen nur GD verfügbar ist (kein vips, kein Imagick), wieder AVIF/WebP erzeugen.
+- **Konfigurierbare AVIF-Pipeline**: Neue Einstellung `avif_converter_preference` (`auto`, `vips`, `gd`, `imagick`). In `auto` wird libvips bevorzugt, sobald verfügbar.
+- **Doku für Betrieb/Hosting erweitert**: README enthält jetzt konkrete Installationspfade für Linux/Plesk sowie einen kurzen Copy-&-Paste-Text, den Nutzer an ihren Hoster senden können.
+
+### Changed
+- **AVIF-Priorisierung verfeinert**: Die Converter-Reihenfolge für AVIF wird jetzt aus der Einstellung abgeleitet (statt statisch), inklusive sauberer Fallback-Kette.
+- **Setup-/Demo-Ausgabe präzisiert**: Demo-Cache und Labeling berücksichtigen jetzt die konfigurierte/effektive AVIF-Pipeline.
+
+### UX
+- **Konfigurationsseite klarer bei deaktiviertem AVIF**: Betroffene Felder werden kontextsensitiv eingeschränkt (inkl. Toggle-Verhalten), um widersprüchliche Kombinationen zu vermeiden.
+- **Inline-Script CSP-konform**: Konfigurations-JS nutzt REDAXO-Nonce, sofern verfügbar.
 
 ## [6.2.2] - 2026-06-29
 

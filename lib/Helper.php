@@ -151,6 +151,7 @@ class Helper
 
     private static ?bool $uaFallbackCache = null;
     private static ?string $preferredFormatCache = null;
+    private static ?string $avifConverterPreferenceCache = null;
     private static ?int $webpQualityCache = null;
     private static ?int $avifQualityCache = null;
     private static ?bool $avifDisabledCache = null;
@@ -181,6 +182,75 @@ class Helper
             self::$preferredFormatCache = in_array($val, ['avif', 'webp'], true) ? $val : 'avif';
         }
         return self::$preferredFormatCache;
+    }
+
+    /**
+     * Returns the configured AVIF converter preference.
+     *
+     * - auto: prefer vips when available, otherwise fallback to gd/imagick
+     * - vips|gd|imagick: explicit first choice with fallback to the others
+     */
+    public static function getAvifConverterPreference(): string
+    {
+        if (null === self::$avifConverterPreferenceCache) {
+            $val = (string) rex_config::get('media_negotiator', 'avif_converter_preference', 'auto');
+            self::$avifConverterPreferenceCache = in_array($val, ['auto', 'vips', 'gd', 'imagick'], true)
+                ? $val
+                : 'auto';
+        }
+
+        return self::$avifConverterPreferenceCache;
+    }
+
+    /**
+     * Returns available AVIF converters in execution order.
+     *
+     * Order rules:
+     * - Base fallback order: vips, gd, imagick
+     * - Explicit preference: selected converter is moved to first position
+     * - auto: keeps the base order (thus vips first whenever available)
+     *
+     * @return list<string>
+     */
+    public static function getAvifConverterOrder(): array
+    {
+        $available = [];
+
+        if (self::vipsPossible()) {
+            $available[] = 'vips';
+        }
+        if (function_exists('imageavif') && self::gdSupportsAvif()) {
+            $available[] = 'gd';
+        }
+        if (class_exists(Imagick::class) && in_array('AVIF', self::getImagickFormats(), true)) {
+            $available[] = 'imagick';
+        }
+
+        if ([] === $available) {
+            return [];
+        }
+
+        $baseOrder = ['vips', 'gd', 'imagick'];
+        $order = [];
+        foreach ($baseOrder as $candidate) {
+            if (in_array($candidate, $available, true)) {
+                $order[] = $candidate;
+            }
+        }
+
+        $preference = self::getAvifConverterPreference();
+        if ($preference !== 'auto' && in_array($preference, $order, true)) {
+            $order = array_values(array_filter($order, static fn (string $c): bool => $c !== $preference));
+            array_unshift($order, $preference);
+        }
+
+        return $order;
+    }
+
+    public static function getEffectiveAvifConverter(): string
+    {
+        $order = self::getAvifConverterOrder();
+        return $order[0] ?? 'none';
     }
 
     public static function getWebpQuality(): int

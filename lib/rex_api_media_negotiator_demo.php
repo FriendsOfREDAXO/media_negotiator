@@ -76,6 +76,8 @@ class rex_api_media_negotiator_demo extends rex_api_function
             rex_config::get('media_negotiator', 'force_imagick', false),
             Helper::getWebpQuality(),
             Helper::getAvifQuality(),
+            Helper::getAvifConverterPreference(),
+            Helper::getEffectiveAvifConverter(),
         ])), 0, 8);
     }
 
@@ -128,17 +130,36 @@ class rex_api_media_negotiator_demo extends rex_api_function
         rex_dir::create($dir);
 
         $demoImg      = rex_path::addon('media_negotiator', 'data/demo.jpg');
-        $forceImagick = (bool) rex_config::get('media_negotiator', 'force_imagick', false);
         $quality      = $format === 'webp' ? Helper::getWebpQuality() : Helper::getAvifQuality();
 
         $data = '';
 
-        if (!$forceImagick) {
-            $data = self::convertWithGd($demoImg, $format, $quality);
-        }
+        if ($format === 'avif') {
+            $sourceBlob = @file_get_contents($demoImg);
+            if (is_string($sourceBlob) && $sourceBlob !== '') {
+                foreach (Helper::getAvifConverterOrder() as $converter) {
+                    if ($converter === 'vips') {
+                        $data = (string) (Helper::vipsConvert($sourceBlob, 'avif', $quality) ?: '');
+                    } elseif ($converter === 'gd') {
+                        $data = self::convertWithGd($demoImg, 'avif', $quality);
+                    } else {
+                        $data = self::convertWithImagick($demoImg, 'avif', $quality);
+                    }
 
-        if ($data === '') {
-            $data = self::convertWithImagick($demoImg, $format, $quality);
+                    if ($data !== '') {
+                        break;
+                    }
+                }
+            }
+        } else {
+            // WebP keeps the existing stable order.
+            $forceImagick = (bool) rex_config::get('media_negotiator', 'force_imagick', false);
+            if (!$forceImagick) {
+                $data = self::convertWithGd($demoImg, 'webp', $quality);
+            }
+            if ($data === '') {
+                $data = self::convertWithImagick($demoImg, 'webp', $quality);
+            }
         }
 
         if ($data !== '') {

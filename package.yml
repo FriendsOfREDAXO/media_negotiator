@@ -1,5 +1,5 @@
 package: media_negotiator
-version: 6.2.2
+version: 6.2.3
 name: Media Negotiator
 author: Friends of REDAXO
 supportpage: https://github.com/FriendsOfREDAXO/media_negotiator
@@ -27,6 +27,7 @@ default_config:
     disable_avif: false
     webp_quality: 80
     avif_quality: 60
+    avif_converter_preference: auto
     ua_fallback: false
     preferred_format: avif
 

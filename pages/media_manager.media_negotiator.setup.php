@@ -329,6 +329,7 @@ $preferred   = Helper::getPreferredFormat();
 $forceImagick = (bool) $addon->getConfig('force_imagick', false);
 $webpQuality  = Helper::getWebpQuality();
 $avifQuality  = Helper::getAvifQuality();
+$avifConverter = Helper::getEffectiveAvifConverter();
 
 // JPEG-Originalgröße (nur Datei lesen – keine Konvertierung)
 $jpegSize = is_readable($demo_img) ? (int) filesize($demo_img) : 0;
@@ -360,12 +361,18 @@ $demos[] = [
     'src'   => rex_url::backendController(['rex-api-call' => 'media_negotiator_demo', 'format' => 'jpeg'], false),
 ];
 
-$engineLabel = $forceImagick ? 'Imagick' : 'GD/Imagick';
+$webpEngineLabel = $forceImagick ? 'Imagick' : 'GD/Imagick';
+$avifEngineLabel = match ($avifConverter) {
+    'vips' => 'libvips',
+    'gd' => 'GD',
+    'imagick' => 'Imagick',
+    default => 'n/a',
+};
 
 if (Helper::webpPossible()) {
     $demos[] = [
         'id'    => 'cfg-webp',
-        'label' => 'WebP (' . $engineLabel . ', Q' . $webpQuality . ')',
+        'label' => 'WebP (' . $webpEngineLabel . ', Q' . $webpQuality . ')',
         'mime'  => 'image/webp',
         'size'  => $cachedSizeWebp / 1000,
         'src'   => rex_api_media_negotiator_demo::getUrl('webp'),
@@ -375,7 +382,7 @@ if (Helper::webpPossible()) {
 if (!$disableAvif && Helper::avifPossible()) {
     $demos[] = [
         'id'    => 'cfg-avif',
-        'label' => 'AVIF (' . $engineLabel . ', Q' . $avifQuality . ')',
+        'label' => 'AVIF (' . $avifEngineLabel . ', Q' . $avifQuality . ')',
         'mime'  => 'image/avif',
         'size'  => $cachedSizeAvif / 1000,
         'src'   => rex_api_media_negotiator_demo::getUrl('avif'),

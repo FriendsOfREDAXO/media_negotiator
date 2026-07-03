@@ -64,14 +64,11 @@ class rex_effect_negotiator extends rex_effect_abstract
         }
 
         // Converter order.
-        // For AVIF, GD is tried before Imagick: several ImageMagick builds (backed
-        // by certain libheif/libaom versions) ignore the AVIF compression quality
-        // entirely and always emit a heavily over-compressed file, whereas GD's
-        // imageavif() honours the quality. For WebP, Imagick is kept first (its
-        // WebP quality works reliably). GD also acts as a fallback on servers that
-        // only ship GD (no vips, no Imagick), where previously nothing converted.
+        // AVIF order is configurable in addon settings. In auto mode we keep
+        // vips > gd > imagick, so vips is preferred whenever available.
+        // WebP remains fixed at vips > imagick > gd.
         $converters = ($targetFormat === 'avif')
-            ? ['vips', 'gd', 'imagick']
+            ? Helper::getAvifConverterOrder()
             : ['vips', 'imagick', 'gd'];
 
         foreach ($converters as $converter) {

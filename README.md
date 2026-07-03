@@ -13,6 +13,8 @@ Jetzt mit **libvips**-Support im Negotiator: Wenn die PHP-Extension `vips` insta
 - [ICC-Fix und sRGB-Workflow](#icc-fix-und-srgb-workflow)
 - [Unterstützte Formate](#unterstützte-formate)
 - [Voraussetzungen](#voraussetzungen)
+- [GD-Codec-Support manuell aktivieren (Linux/Plesk)](#gd-codec-support-manuell-aktivieren-linuxplesk)
+- [Vorlage für Hoster-Anfrage](#vorlage-fuer-hoster-anfrage)
 - [Installation](#installation)
 - [Einrichtung](#einrichtung)
 - [Einstellungen](#einstellungen)
@@ -113,6 +115,92 @@ Wichtig: Den ICC-Fix-Effekt in der Effektkette möglichst **vor** Resize, Crop u
 
 ---
 
+## GD-Codec-Support manuell aktivieren (Linux/Plesk)
+
+Wenn auf dem Server bei `gd_info()` weder **AVIF Support** noch **WebP Support** aktiv ist, können Sie GD manuell mit den benötigten Codecs neu bauen.
+
+### 1) Linux (Debian/Ubuntu, Docker oder VM)
+
+Voraussetzung: PHP aus dem offiziellen Docker-Image oder aus Quellen, sodass `docker-php-ext-*` bzw. `phpize` verfügbar ist.
+
+```bash
+# Build-Abhängigkeiten installieren
+apt-get update
+apt-get install -y --no-install-recommends \
+  libavif-dev libwebp-dev libjpeg62-turbo-dev libpng-dev libfreetype6-dev pkg-config
+
+# GD mit AVIF/WebP konfigurieren und bauen (Docker-PHP Images)
+docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp --with-avif
+docker-php-ext-install -j"$(nproc)" gd
+
+# Verifikation
+php -r 'print_r(gd_info()); echo "imageavif: ".(function_exists("imageavif")?"yes":"no").PHP_EOL; echo "imagewebp: ".(function_exists("imagewebp")?"yes":"no").PHP_EOL;'
+```
+
+Hinweis für Docker: Änderungen direkt im laufenden Container sind nicht persistent. Für dauerhafte Nutzung die Schritte im Dockerfile hinterlegen und das Image neu bauen.
+
+### 2) Plesk (Debian/Ubuntu)
+
+Plesk nutzt versionierte PHP-Binaries unter `/opt/plesk/php/<version>/bin/php`. Prüfen und bauen Sie immer gegen genau diesen Handler.
+
+```bash
+# Beispiel: Plesk PHP 8.3 prüfen
+/opt/plesk/php/8.3/bin/php -r 'print_r(gd_info());'
+
+# Falls AVIF/WebP fehlen: System-Codecs installieren
+apt-get update
+apt-get install -y --no-install-recommends \
+  libavif-dev libwebp-dev libjpeg62-turbo-dev libpng-dev libfreetype6-dev pkg-config
+
+# GD gegen den Plesk-Handler neu bauen (Pfade je Version anpassen)
+export PHP_PREFIX=/opt/plesk/php/8.3
+export PATH="$PHP_PREFIX/bin:$PATH"
+
+cd /usr/local/src
+curl -fsSLO https://www.php.net/distributions/php-8.3.23.tar.xz
+tar -xf php-8.3.23.tar.xz
+cd php-8.3.23/ext/gd
+
+phpize
+./configure --with-php-config="$PHP_PREFIX/bin/php-config" --with-freetype --with-jpeg --with-webp --with-avif
+make -j"$(nproc)"
+make install
+
+# Extension aktivieren und FPM neu starten
+echo "extension=gd.so" > "$PHP_PREFIX/etc/php.d/99-custom-gd.ini"
+systemctl restart plesk-php83-fpm
+
+# Verifikation
+$PHP_PREFIX/bin/php -r 'print_r(gd_info()); echo "imageavif: ".(function_exists("imageavif")?"yes":"no").PHP_EOL; echo "imagewebp: ".(function_exists("imagewebp")?"yes":"no").PHP_EOL;'
+```
+
+Wichtig: Bei Plesk muss die Quellversion zu Ihrer aktiven PHP-Nebenversion passen (z. B. 8.3.x). Wiederholen Sie die Schritte für jede installierte PHP-Version separat.
+
+---
+
+## Vorlage für Hoster-Anfrage
+
+Kurztext zum Kopieren (Deutsch):
+
+```text
+Guten Tag,
+
+für unsere REDAXO-Installation benötigen wir auf dem Webserver Unterstützung für moderne Bildformate (AVIF/WebP).
+
+Bevorzugt:
+- libvips + PHP-Extension vips (php-vips)
+
+Alternativ mindestens eine der folgenden Varianten:
+- GD mit AVIF- und WebP-Support (imageavif/imagewebp)
+- Imagick/ImageMagick mit AVIF- und WebP-Codec
+
+Bitte aktivieren Sie den Support für die von uns verwendete PHP-Version und den entsprechenden Web-Handler (FPM/Apache).
+
+Vielen Dank.
+```
+
+---
+
 ## Installation
 
 Installation über den REDAXO-Installer oder manuell durch Hochladen in `redaxo/src/addons/media_negotiator`.
@@ -144,6 +232,7 @@ Unter **Media Manager → Media Negotiator → Einstellungen** stehen folgende O
 | **AVIF deaktivieren** | Verhindert AVIF-Ausgabe, z. B. wenn der Server keinen AVIF-Codec besitzt | Nein |
 | **WebP-Qualität** | Kompressionsstufe für WebP (0–100) | 80 |
 | **AVIF-Qualität** | Kompressionsstufe für AVIF (0–100) | 60 |
+| **Bevorzugte AVIF-Pipeline** | Legt den bevorzugten AVIF-Konverter fest (`auto`, `vips`, `gd`, `imagick`). Bei `auto` wird libvips bevorzugt, sobald verfügbar. | `auto` |
 | **User-Agent-Fallback** | Format auch anhand des User-Agent ermitteln, wenn der Accept-Header keine expliziten Formate enthält | Nein |
 | **Bevorzugtes Format** | Steuert die Prioritaet der Ausgabe: `avif` oder `webp` | `avif` |
 
