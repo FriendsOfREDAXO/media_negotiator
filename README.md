@@ -221,7 +221,7 @@ Installation über den REDAXO-Installer oder manuell durch Hochladen in `redaxo/
 5. Den Effekt **„Negotiate image format"** als **letzten Effekt** hinzufügen.
 6. Den Medientyp speichern.
 
-> **⚠ Reihenfolge beachten:** Der Negotiator-Effekt muss immer **als letzter Effekt** in der Kette stehen. Er konvertiert das fertig transformierte Bild ins Zielformat (WebP/AVIF). Nachfolgende Effekte würden auf dem konvertierten Blob arbeiten – GD kann WebP/AVIF nicht lesen und würde fehlschlagen.
+> **⚠ Reihenfolge empfohlen:** Den Negotiator-Effekt möglichst als letzten Effekt platzieren. Er ist als Ausgabeschritt gedacht und konvertiert in das Zielformat (WebP/AVIF). Nachfolgende Effekte funktionieren nur, wenn die jeweilige Verarbeitungskette das erzeugte Format auch lesen kann (inklusive passender Codec-Unterstützung in GD/Imagick/libvips).
 
 Ab sofort liefert der Media Manager Bilder dieses Typs automatisch im optimalen Format aus.
 
