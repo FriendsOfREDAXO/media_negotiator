@@ -253,6 +253,46 @@ class Helper
         return $order[0] ?? 'none';
     }
 
+    /**
+     * Returns available WebP converters in execution order.
+     *
+     * @return list<string>
+     */
+    public static function getWebpConverterOrder(): array
+    {
+        $available = [];
+
+        if (self::vipsPossible()) {
+            $available[] = 'vips';
+        }
+        if (class_exists(Imagick::class) && in_array('WEBP', self::getImagickFormats(), true)) {
+            $available[] = 'imagick';
+        }
+        if (function_exists('imagewebp') && self::gdSupportsWebp()) {
+            $available[] = 'gd';
+        }
+
+        if ([] === $available) {
+            return [];
+        }
+
+        $baseOrder = ['vips', 'imagick', 'gd'];
+        $order = [];
+        foreach ($baseOrder as $candidate) {
+            if (in_array($candidate, $available, true)) {
+                $order[] = $candidate;
+            }
+        }
+
+        return $order;
+    }
+
+    public static function getEffectiveWebpConverter(): string
+    {
+        $order = self::getWebpConverterOrder();
+        return $order[0] ?? 'none';
+    }
+
     public static function getWebpQuality(): int
     {
         if (null === self::$webpQualityCache) {

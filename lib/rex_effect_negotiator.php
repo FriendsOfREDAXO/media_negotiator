@@ -66,10 +66,10 @@ class rex_effect_negotiator extends rex_effect_abstract
         // Converter order.
         // AVIF order is configurable in addon settings. In auto mode we keep
         // vips > gd > imagick, so vips is preferred whenever available.
-        // WebP remains fixed at vips > imagick > gd.
+        // WebP keeps vips > imagick > gd and only includes available converters.
         $converters = ($targetFormat === 'avif')
             ? Helper::getAvifConverterOrder()
-            : ['vips', 'imagick', 'gd'];
+            : Helper::getWebpConverterOrder();
 
         foreach ($converters as $converter) {
             $result = false;

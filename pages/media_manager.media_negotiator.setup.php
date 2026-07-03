@@ -326,9 +326,9 @@ $demo_img  = rex_path::addon('media_negotiator', 'data/demo.jpg');
 $addon     = rex_addon::get('media_negotiator');
 $disableAvif = (bool) $addon->getConfig('disable_avif', false);
 $preferred   = Helper::getPreferredFormat();
-$forceImagick = (bool) $addon->getConfig('force_imagick', false);
 $webpQuality  = Helper::getWebpQuality();
 $avifQuality  = Helper::getAvifQuality();
+$webpConverter = Helper::getEffectiveWebpConverter();
 $avifConverter = Helper::getEffectiveAvifConverter();
 
 // JPEG-Originalgröße (nur Datei lesen – keine Konvertierung)
@@ -361,7 +361,12 @@ $demos[] = [
     'src'   => rex_url::backendController(['rex-api-call' => 'media_negotiator_demo', 'format' => 'jpeg'], false),
 ];
 
-$webpEngineLabel = $forceImagick ? 'Imagick' : 'GD/Imagick';
+$webpEngineLabel = match ($webpConverter) {
+    'vips' => 'libvips',
+    'gd' => 'GD',
+    'imagick' => 'Imagick',
+    default => 'n/a',
+};
 $avifEngineLabel = match ($avifConverter) {
     'vips' => 'libvips',
     'gd' => 'GD',
