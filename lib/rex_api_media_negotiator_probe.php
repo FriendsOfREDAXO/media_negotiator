@@ -74,8 +74,7 @@ class rex_api_media_negotiator_probe extends rex_api_function
     private static function getProbes(): array
     {
         $probes = rex_session(self::SESSION_KEY, 'array', []);
-
-        return is_array($probes) ? $probes : [];
+        return $probes;
     }
 
     /**

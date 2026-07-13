@@ -29,6 +29,8 @@ rex_extension::register('MEDIA_MANAGER_INIT', function (rex_extension_point $ep)
                 $cacheKey .= '-q' . FriendsOfRedaxo\MediaNegotiator\Helper::getWebpQuality();
             } elseif ($possibleFormat === 'avif') {
                 $cacheKey .= '-q' . FriendsOfRedaxo\MediaNegotiator\Helper::getAvifQuality();
+                $cacheKey .= '-acp' . FriendsOfRedaxo\MediaNegotiator\Helper::getAvifConverterPreference();
+                $cacheKey .= '-ace' . FriendsOfRedaxo\MediaNegotiator\Helper::getEffectiveAvifConverter();
             }
 
             $cacheKey .= '-im' . ((bool) rex_config::get('media_negotiator', 'force_imagick', false) ? '1' : '0');

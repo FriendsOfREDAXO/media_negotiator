@@ -1,5 +1,5 @@
 package: media_negotiator
-version: 6.2.2
+version: 6.2.3
 name: Media Negotiator
 author: Friends of REDAXO
 supportpage: https://github.com/FriendsOfREDAXO/media_negotiator
@@ -21,12 +21,17 @@ pages:
             icc_fix:
                 title: 'translate:media_negotiator_icc_fix_title'
                 icon: 'rex-icon fa-magic'
+            help:
+                title: 'translate:help'
+                subPath: README.md
+                itemClass: 'pull-right'
 
 default_config:
     force_imagick: false
     disable_avif: false
     webp_quality: 80
     avif_quality: 60
+    avif_converter_preference: auto
     ua_fallback: false
     preferred_format: avif
 
