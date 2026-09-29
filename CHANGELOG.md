@@ -4,6 +4,9 @@
 
 ### Fixed
 - **AVIF-Qualität wird auf betroffenen ImageMagick-Builds respektiert**: Für AVIF wird nun GD (`imageavif`) vor Imagick versucht. Mehrere ImageMagick-Builds (mit bestimmten libheif/libaom-Versionen) ignorieren die AVIF-Kompressionsqualität komplett und liefern unabhängig vom eingestellten Wert immer eine stark überkomprimierte Datei; GD setzt die Qualität korrekt um. Für WebP bleibt Imagick bevorzugt.
+- **Original-Medienpfad bleibt nach der Konvertierung erhalten**: `setSourceFromBlob()` setzt die konvertierte Temp-Datei nur noch als Quelle (`setSourcePath()`) statt per `setMediaPath()`. Bisher landete der Temp-Pfad als `media_path` im Header-Cache des Media Managers; Addons, die daraus URLs bauen (z. B. `media_manager_responsive`), lieferten dann nicht existierende `blob_….avif`-URLs aus. Nach dem Update den Media-Manager-Cache leeren.
+- **Content-Disposition mit Originalnamen**: ausgehandelte Bilder heißen beim Speichern `bildname.avif` bzw. `bildname.webp` statt `blob_<uniqid>.avif`.
+- **Temp-Dateien werden aufgeräumt**: Die `blob_*`-Dateien unter `cache/addons/media_negotiator/` werden am Ende des Requests gelöscht, statt dauerhaft neben dem Media-Manager-Cache liegen zu bleiben.
 
 ### Added
 - `Helper::gdConvert()` als dritter Converter neben vips und Imagick. Damit können Server, auf denen nur GD verfügbar ist (kein vips, kein Imagick), wieder AVIF/WebP erzeugen.
