@@ -4,6 +4,9 @@
 
 ### Fixed
 - **AVIF-Qualität wird auf betroffenen ImageMagick-Builds respektiert**: Für AVIF wird nun GD (`imageavif`) vor Imagick versucht. Mehrere ImageMagick-Builds (mit bestimmten libheif/libaom-Versionen) ignorieren die AVIF-Kompressionsqualität komplett und liefern unabhängig vom eingestellten Wert immer eine stark überkomprimierte Datei; GD setzt die Qualität korrekt um. Für WebP bleibt Imagick bevorzugt.
+- **Imagick respektiert die AVIF-Qualität**: Ursache war nicht der Build, sondern der Aufruf. Der AVIF-Coder von ImageMagick liest die Qualität aus `setCompressionQuality()`, `imagickConvert()` setzte nur `setImageCompressionQuality()` – jedes AVIF entstand mit der Coder-Vorgabe 50. Jetzt werden beide gesetzt.
+- **Keine zweite verlustbehaftete Kodierung mehr**: Das Ergebnis der Effektkette ging seit 6.2.2 als JPEG (mit der `jpg_quality` des Media Managers) an den Konverter und wurde dort ein zweites Mal komprimiert. Es wird jetzt verlustfrei als PNG übergeben – gemessen rund 1,8 dB PSNR besser bei gleicher Dateigröße, mit GD wie mit Imagick.
+- **srcset-Breiten bekommen ein eigenes Cache-Verzeichnis je Format**: Typen der Form `<typ>__<breite>` (media_srcset) wurden im `MEDIA_MANAGER_INIT` nicht als Negotiator-Typ erkannt. Wer eine Breite zuerst abrief, bestimmte das ausgelieferte Format für alle Browser. Jetzt wird auf den Grundtyp zurückgegriffen.
 
 ### Added
 - `Helper::gdConvert()` als dritter Converter neben vips und Imagick. Damit können Server, auf denen nur GD verfügbar ist (kein vips, kein Imagick), wieder AVIF/WebP erzeugen.
