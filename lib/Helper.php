@@ -446,6 +446,12 @@ class Helper
             $imagick->readImageBlob($blob);
             $imagick->setImageFormat($targetFormat);
             if ($quality >= 0) {
+                // ImageMagick's HEIC/AVIF coder reads the quality from the wand
+                // options (setCompressionQuality), not from the image. With only
+                // setImageCompressionQuality() every AVIF was written at the
+                // coder default of 50, whatever was configured. The WebP coder
+                // reads both, so setting both is safe for every format.
+                $imagick->setCompressionQuality($quality);
                 $imagick->setImageCompressionQuality($quality);
             }
             $result = $imagick->getImageBlob();
@@ -463,11 +469,9 @@ class Helper
      *
      *  - On servers that only ship GD (no vips, no Imagick) it is currently the
      *    only way to produce AVIF/WebP at all – previously nothing converted.
-     *  - For AVIF it is often the more reliable choice: several ImageMagick
-     *    builds backed by certain libheif/libaom versions IGNORE the compression
-     *    quality entirely (every quality level yields the same, heavily
-     *    over-compressed file), whereas GD's imageavif() honours the quality
-     *    parameter across the full range.
+     *  - For AVIF it is tried before Imagick. Imagick used to ignore the
+     *    compression quality (every level yielded the same, heavily
+     *    over-compressed file); see imagickConvert() for the cause and fix.
      *
      * @param string $blob         Raw image data (already resized by the effect chain)
      * @param string $targetFormat 'avif' or 'webp'
