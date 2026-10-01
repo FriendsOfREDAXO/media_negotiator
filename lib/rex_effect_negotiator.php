@@ -54,7 +54,7 @@ class rex_effect_negotiator extends rex_effect_abstract
         // Use current effect-chain output as source (not original file path),
         // so resize/crop/content_builder transformations are preserved.
         try {
-            $sourceBlob = $this->media->getSource();
+            $sourceBlob = $this->losslessSource();
         } catch (\Throwable) {
             return;
         }
@@ -118,6 +118,33 @@ class rex_effect_negotiator extends rex_effect_abstract
         }
 
         // All converters failed, keep original image
+    }
+
+    /**
+     * Current effect-chain output without a second lossy generation.
+     *
+     * getSource() encodes a GD image in its original format, i.e. a resized
+     * photo as JPEG with the media manager's jpg_quality (default 80). The
+     * AVIF/WebP encoder then compressed that JPEG a second time. Measured on a
+     * 1106 px photo at AVIF quality 60: about 1.8 dB PSNR lost at the same file
+     * size, with both GD and Imagick. PNG is lossless; level 1 keeps the
+     * encoding cheap, the blob only lives until the converter has read it.
+     *
+     * Without a preceding effect the media is not a GD image; getSource() then
+     * returns the original file, which has been compressed only once.
+     */
+    private function losslessSource(): string
+    {
+        try {
+            $image = $this->media->getImage();
+        } catch (\BadMethodCallException) {
+            return $this->media->getSource();
+        }
+
+        imagesavealpha($image, true);
+        ob_start();
+        imagepng($image, null, 1);
+        return (string) ob_get_clean();
     }
 
     private function setSourceFromBlob(string $blob, string $format): void
