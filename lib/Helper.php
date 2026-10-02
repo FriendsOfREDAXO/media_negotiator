@@ -209,7 +209,8 @@ class Helper
      * Order rules:
      * - Base fallback order: vips, gd, imagick
      * - Explicit preference: selected converter is moved to first position
-     * - auto: keeps the base order (thus vips first whenever available)
+     * - auto: keeps the base order (thus vips first whenever available),
+     *   unless force_imagick is set, which moves imagick to the front
      *
      * @return list<string>
      */
@@ -240,12 +241,11 @@ class Helper
         }
 
         $preference = self::getAvifConverterPreference();
-        if ($preference !== 'auto' && in_array($preference, $order, true)) {
-            $order = array_values(array_filter($order, static fn (string $c): bool => $c !== $preference));
-            array_unshift($order, $preference);
+        if ($preference === 'auto' && self::getForceImagick()) {
+            $preference = 'imagick';
         }
 
-        return $order;
+        return self::moveConverterToFront($order, $preference);
     }
 
     public static function getEffectiveAvifConverter(): string
@@ -255,7 +255,8 @@ class Helper
     }
 
     /**
-     * Returns available WebP converters in execution order.
+     * Returns available WebP converters in execution order
+     * (vips, imagick, gd; imagick first when force_imagick is set).
      *
      * @return list<string>
      */
@@ -284,6 +285,22 @@ class Helper
                 $order[] = $candidate;
             }
         }
+
+        return self::getForceImagick() ? self::moveConverterToFront($order, 'imagick') : $order;
+    }
+
+    /**
+     * @param list<string> $order
+     * @return list<string>
+     */
+    private static function moveConverterToFront(array $order, string $converter): array
+    {
+        if (!in_array($converter, $order, true)) {
+            return $order;
+        }
+
+        $order = array_values(array_filter($order, static fn (string $c): bool => $c !== $converter));
+        array_unshift($order, $converter);
 
         return $order;
     }

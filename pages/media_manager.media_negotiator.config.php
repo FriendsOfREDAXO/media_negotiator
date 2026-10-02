@@ -9,6 +9,7 @@ if ($avifDisabled) {
 
 $field = $form->addRadioField('force_imagick');
 $field->setLabel(rex_i18n::msg('media_negotiator_config_force_imagick_label'));
+$field->setNotice(rex_i18n::msg('media_negotiator_config_force_imagick_notice'));
 $field->addOption(rex_i18n::msg('media_negotiator_yes'), 1);
 $field->addOption(rex_i18n::msg('media_negotiator_no'), 0);
 

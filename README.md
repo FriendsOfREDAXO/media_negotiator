@@ -233,7 +233,7 @@ Unter **Media Manager → Media Negotiator → Einstellungen** stehen folgende O
 
 | Option | Beschreibung | Standard |
 |--------|-------------|---------|
-| **Imagick erzwingen** | Kompatibilitätsoption (Legacy), derzeit ohne Einfluss auf die automatische AVIF/WebP-Konverter-Reihenfolge | Nein |
+| **Imagick erzwingen** | Imagick wird vor libvips und GD versucht – bei WebP immer, bei AVIF nur, solange die AVIF-Pipeline auf „Automatisch“ steht | Nein |
 | **AVIF deaktivieren** | Verhindert AVIF-Ausgabe, z. B. wenn der Server keinen AVIF-Codec besitzt | Nein |
 | **WebP-Qualität** | Kompressionsstufe für WebP (0–100) | 80 |
 | **AVIF-Qualität** | Kompressionsstufe für AVIF (0–100) | 60 |

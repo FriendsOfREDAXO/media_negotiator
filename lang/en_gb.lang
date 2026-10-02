@@ -85,12 +85,13 @@ media_negotiator_setup_format_original = Original (no upgrade)
 # Settings page
 media_negotiator_config_title = Settings
 media_negotiator_config_force_imagick_label = Force Imagick (even when GD functions are available)
+media_negotiator_config_force_imagick_notice = Imagick is tried before libvips and GD. For AVIF only while the AVIF pipeline is set to "Automatic".
 media_negotiator_config_disable_avif_label = Disable AVIF
 media_negotiator_config_disable_avif_notice = If the server does not have an AVIF codec, AVIF generation can be disabled here.
 media_negotiator_config_webp_quality_label = WebP quality (0–100)
-media_negotiator_config_webp_quality_notice = Default: 80. Only applies when using Imagick.
+media_negotiator_config_webp_quality_notice = Default: 80. Applies to all converters (libvips, Imagick, GD).
 media_negotiator_config_avif_quality_label = AVIF quality (0–100)
-media_negotiator_config_avif_quality_notice = Default: 60. Only applies when using Imagick.
+media_negotiator_config_avif_quality_notice = Default: 60. Applies to all converters (libvips, Imagick, GD).
 media_negotiator_config_avif_converter_preference_label = Preferred AVIF pipeline
 media_negotiator_config_avif_converter_preference_notice = Selects the preferred AVIF converter. In "Automatic", libvips is preferred whenever available.
 media_negotiator_config_avif_converter_preference_auto = Automatic (libvips > GD > Imagick)
