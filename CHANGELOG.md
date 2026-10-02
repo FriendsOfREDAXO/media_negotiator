@@ -7,6 +7,9 @@
 - **Original-Medienpfad bleibt nach der Konvertierung erhalten**: `setSourceFromBlob()` setzt die konvertierte Temp-Datei nur noch als Quelle (`setSourcePath()`) statt per `setMediaPath()`. Bisher landete der Temp-Pfad als `media_path` im Header-Cache des Media Managers; Addons, die daraus URLs bauen (z. B. `media_manager_responsive`), lieferten dann nicht existierende `blob_….avif`-URLs aus. Nach dem Update den Media-Manager-Cache leeren.
 - **Content-Disposition mit Originalnamen**: ausgehandelte Bilder heißen beim Speichern `bildname.avif` bzw. `bildname.webp` statt `blob_<uniqid>.avif`.
 - **Temp-Dateien werden aufgeräumt**: Die `blob_*`-Dateien unter `cache/addons/media_negotiator/` werden am Ende des Requests gelöscht, statt dauerhaft neben dem Media-Manager-Cache liegen zu bleiben.
+- **Imagick respektiert die AVIF-Qualität**: Ursache war nicht der Build, sondern der Aufruf. Der AVIF-Coder von ImageMagick liest die Qualität aus `setCompressionQuality()`, `imagickConvert()` setzte nur `setImageCompressionQuality()` – jedes AVIF entstand mit der Coder-Vorgabe 50. Jetzt werden beide gesetzt.
+- **Keine zweite verlustbehaftete Kodierung mehr**: Das Ergebnis der Effektkette ging seit 6.2.2 als JPEG (mit der `jpg_quality` des Media Managers) an den Konverter und wurde dort ein zweites Mal komprimiert. Es wird jetzt verlustfrei als PNG übergeben – gemessen rund 1,8 dB PSNR besser bei gleicher Dateigröße, mit GD wie mit Imagick.
+- **srcset-Breiten bekommen ein eigenes Cache-Verzeichnis je Format**: Typen der Form `<typ>__<breite>` (media_srcset) wurden im `MEDIA_MANAGER_INIT` nicht als Negotiator-Typ erkannt. Wer eine Breite zuerst abrief, bestimmte das ausgelieferte Format für alle Browser. Jetzt wird auf den Grundtyp zurückgegriffen.
 
 ### Added
 - `Helper::gdConvert()` als dritter Converter neben vips und Imagick. Damit können Server, auf denen nur GD verfügbar ist (kein vips, kein Imagick), wieder AVIF/WebP erzeugen.

@@ -17,6 +17,17 @@ rex_extension::register('MEDIA_MANAGER_INIT', function (rex_extension_point $ep)
     $type = $ep->getParam('type');
     $effects = $mediaManager->effectsFromType($type);
 
+    // media_srcset requests its widths as "<type>__<width>". No type of that
+    // name exists in the table (media_srcset supplies the effects later via
+    // MEDIA_MANAGER_FILTERSET), so the loop below found no negotiator, the
+    // cache path got no format prefix, and whoever requested a width first
+    // decided the format for everyone: a WebP-only client cached WebP, and
+    // every AVIF client got WebP from then on (and vice versa). Fall back to
+    // the base type, split at the first "__" like media_srcset does.
+    if ([] === $effects && is_string($type) && false !== ($pos = strpos($type, '__'))) {
+        $effects = $mediaManager->effectsFromType(substr($type, 0, $pos));
+    }
+
     foreach ($effects as $effect) {
         if ($effect['effect'] === 'negotiator') {
             // change cache path for negotiator
