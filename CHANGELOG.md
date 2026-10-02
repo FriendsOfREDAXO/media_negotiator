@@ -12,6 +12,7 @@
 - **srcset-Breiten bekommen ein eigenes Cache-Verzeichnis je Format**: Typen der Form `<typ>__<breite>` (media_srcset) wurden im `MEDIA_MANAGER_INIT` nicht als Negotiator-Typ erkannt. Wer eine Breite zuerst abrief, bestimmte das ausgelieferte Format für alle Browser. Jetzt wird auf den Grundtyp zurückgegriffen.
 - **„Imagick erzwingen“ wirkt wieder**: Seit 6.2.1 wurde die Einstellung ignoriert. Imagick steht damit wieder vorne – bei WebP immer, bei AVIF nur, solange die AVIF-Pipeline auf „Automatisch“ steht (eine explizite Pipeline-Wahl hat Vorrang).
 - **Media-Manager-Cache wird beim Update geleert**: `update.php` löscht den Media-Manager-Cache und alte `blob_*`-Dateien, damit keine Header-Datei mehr auf eine nicht existierende Temp-Datei zeigt. Manuelles Leeren ist nicht mehr nötig.
+- **libvips erzeugt wieder AVIF**: `vipsConvert()` übergab `.avif` als Buffer-Format, das libvips nicht kennt (`heifsave_buffer` registriert nur `.heic`/`.heif`). AVIF über vips schlug daher immer fehl und GD/Imagick sprangen still ein, obwohl Setup-Seite und Cache-Key „libvips“ meldeten. Jetzt wird HEIF mit `compression=av1` geschrieben.
 - Hinweistexte zur WebP-/AVIF-Qualität korrigiert: die Werte gelten für alle Konverter, nicht nur für Imagick.
 
 ### Added

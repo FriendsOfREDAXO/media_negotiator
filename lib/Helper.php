@@ -476,7 +476,15 @@ class Helper
             $options['Q'] = $quality;
         }
 
-        $out = vips_image_write_to_buffer($result['out'], '.' . $targetFormat, $options);
+        // heifsave_buffer only registers the ".heic"/".heif" suffixes, so ".avif" fails
+        // as a buffer format. AVIF is HEIF with AV1 compression.
+        $suffix = '.' . $targetFormat;
+        if ($targetFormat === 'avif') {
+            $suffix = '.heif';
+            $options['compression'] = 'av1';
+        }
+
+        $out = vips_image_write_to_buffer($result['out'], $suffix, $options);
         if (!is_array($out) || isset($out['error']) || !isset($out['buffer'])) {
             return false;
         }
