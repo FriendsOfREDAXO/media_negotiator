@@ -1,32 +1,33 @@
 # Changelog
 
-## [Unreleased]
+## [6.3.0] - 2026-10-02
+
+> **Hinweis zum Update:** Beim Update wird der Media-Manager-Cache automatisch geleert. Alle Derivate werden beim nächsten Abruf neu erzeugt, in besserer Qualität.
 
 ### Fixed
-- **AVIF-Qualität wird auf betroffenen ImageMagick-Builds respektiert**: Für AVIF wird nun GD (`imageavif`) vor Imagick versucht. Mehrere ImageMagick-Builds (mit bestimmten libheif/libaom-Versionen) ignorieren die AVIF-Kompressionsqualität komplett und liefern unabhängig vom eingestellten Wert immer eine stark überkomprimierte Datei; GD setzt die Qualität korrekt um. Für WebP bleibt Imagick bevorzugt.
-- **Original-Medienpfad bleibt nach der Konvertierung erhalten**: `setSourceFromBlob()` setzt die konvertierte Temp-Datei nur noch als Quelle (`setSourcePath()`) statt per `setMediaPath()`. Bisher landete der Temp-Pfad als `media_path` im Header-Cache des Media Managers; Addons, die daraus URLs bauen (z. B. `media_manager_responsive`), lieferten dann nicht existierende `blob_….avif`-URLs aus. Der Media-Manager-Cache wird beim Update automatisch geleert.
-- **Content-Disposition mit Originalnamen**: ausgehandelte Bilder heißen beim Speichern `bildname.avif` bzw. `bildname.webp` statt `blob_<uniqid>.avif`.
-- **Temp-Dateien werden aufgeräumt**: Die `blob_*`-Dateien unter `cache/addons/media_negotiator/` werden am Ende des Requests gelöscht, statt dauerhaft neben dem Media-Manager-Cache liegen zu bleiben.
-- **Imagick respektiert die AVIF-Qualität**: Ursache war nicht der Build, sondern der Aufruf. Der AVIF-Coder von ImageMagick liest die Qualität aus `setCompressionQuality()`, `imagickConvert()` setzte nur `setImageCompressionQuality()` – jedes AVIF entstand mit der Coder-Vorgabe 50. Jetzt werden beide gesetzt.
-- **Keine zweite verlustbehaftete Kodierung mehr**: Das Ergebnis der Effektkette ging seit 6.2.2 als JPEG (mit der `jpg_quality` des Media Managers) an den Konverter und wurde dort ein zweites Mal komprimiert. Es wird jetzt verlustfrei als PNG übergeben – gemessen rund 1,8 dB PSNR besser bei gleicher Dateigröße, mit GD wie mit Imagick.
-- **srcset-Breiten bekommen ein eigenes Cache-Verzeichnis je Format**: Typen der Form `<typ>__<breite>` (media_srcset) wurden im `MEDIA_MANAGER_INIT` nicht als Negotiator-Typ erkannt. Wer eine Breite zuerst abrief, bestimmte das ausgelieferte Format für alle Browser. Jetzt wird auf den Grundtyp zurückgegriffen.
-- **„Imagick erzwingen“ wirkt wieder**: Seit 6.2.1 wurde die Einstellung ignoriert. Imagick steht damit wieder vorne – bei WebP immer, bei AVIF nur, solange die AVIF-Pipeline auf „Automatisch“ steht (eine explizite Pipeline-Wahl hat Vorrang).
-- **Media-Manager-Cache wird beim Update geleert**: `update.php` löscht den Media-Manager-Cache und alte `blob_*`-Dateien, damit keine Header-Datei mehr auf eine nicht existierende Temp-Datei zeigt. Manuelles Leeren ist nicht mehr nötig.
-- **libvips erzeugt wieder AVIF**: `vipsConvert()` übergab `.avif` als Buffer-Format, das libvips nicht kennt (`heifsave_buffer` registriert nur `.heic`/`.heif`). AVIF über vips schlug daher immer fehl und GD/Imagick sprangen still ein, obwohl Setup-Seite und Cache-Key „libvips“ meldeten. Jetzt wird HEIF mit `compression=av1` geschrieben.
-- Hinweistexte zur WebP-/AVIF-Qualität korrigiert: die Werte gelten für alle Konverter, nicht nur für Imagick.
+- **AVIF-Qualität wird von allen Konvertern respektiert**
+  - Imagick: Der AVIF-Coder von ImageMagick liest die Qualität aus `setCompressionQuality()`, `imagickConvert()` setzte nur `setImageCompressionQuality()`. Jedes AVIF entstand deshalb mit der Coder-Vorgabe 50. Jetzt werden beide gesetzt. (#39, @alexwenz; Auslöser war #36, @danspringer)
+  - libvips: `vipsConvert()` übergab `.avif` als Buffer-Format, das libvips nicht kennt. AVIF über vips schlug daher immer fehl, und GD/Imagick sprangen still ein, obwohl Setup-Seite und Cache-Key „libvips“ meldeten. Jetzt wird HEIF mit `compression=av1` geschrieben.
+- **Keine zweite verlustbehaftete Kodierung mehr**: Das Ergebnis der Effektkette ging seit 6.2.2 als JPEG (mit der `jpg_quality` des Media Managers) an den Konverter und wurde dort ein zweites Mal komprimiert. Es wird jetzt verlustfrei als PNG übergeben – gemessen rund 1,8 dB PSNR besser bei gleicher Dateigröße. (#39, @alexwenz)
+- **srcset-Breiten bekommen ein eigenes Cache-Verzeichnis je Format**: Typen der Form `<typ>__<breite>` (media_srcset) wurden nicht als Negotiator-Typ erkannt. Wer eine Breite zuerst abrief, bestimmte das ausgelieferte Format für alle Browser. (#39, @alexwenz)
+- **Original-Medienpfad bleibt nach der Konvertierung erhalten**: Die konvertierte Temp-Datei wird nur noch als Quelle gesetzt (`setSourcePath()` statt `setMediaPath()`). Bisher landete der Temp-Pfad als `media_path` im Header-Cache; Addons, die daraus URLs bauen (z. B. `media_manager_responsive`), lieferten nicht existierende `blob_….avif`-URLs aus. (#38, @alexwenz)
+- **Content-Disposition mit Originalnamen**: Ausgehandelte Bilder heißen beim Speichern `bildname.avif` bzw. `bildname.webp` statt `blob_<uniqid>.avif`. (#38, @alexwenz)
+- **Temp-Dateien werden aufgeräumt**: Die `blob_*`-Dateien unter `cache/addons/media_negotiator/` werden am Ende des Requests gelöscht. (#38, @alexwenz)
+- **„Imagick erzwingen“ wirkt wieder**: Seit 6.2.1 wurde die Einstellung ignoriert. Imagick steht damit wieder vorne – bei WebP immer, bei AVIF, solange die AVIF-Pipeline auf „Automatisch“ steht.
+- Hinweistexte zur WebP-/AVIF-Qualität korrigiert: Die Werte gelten für alle Konverter, nicht nur für Imagick.
 
 ### Added
-- `Helper::gdConvert()` als dritter Converter neben vips und Imagick. Damit können Server, auf denen nur GD verfügbar ist (kein vips, kein Imagick), wieder AVIF/WebP erzeugen.
-- **Konfigurierbare AVIF-Pipeline**: Neue Einstellung `avif_converter_preference` (`auto`, `vips`, `gd`, `imagick`). In `auto` wird libvips bevorzugt, sobald verfügbar.
-- **Doku für Betrieb/Hosting erweitert**: README enthält jetzt konkrete Installationspfade für Linux/Plesk sowie einen kurzen Copy-&-Paste-Text, den Nutzer an ihren Hoster senden können.
+- **Konfigurierbare AVIF-Pipeline**: Neue Einstellung `avif_converter_preference` (`auto`, `vips`, `gd`, `imagick`). In `auto` gilt libvips > GD > Imagick. (#37)
+- `Helper::gdConvert()` als dritter Konverter neben vips und Imagick. Server, auf denen nur GD verfügbar ist, können damit wieder AVIF/WebP erzeugen. (#36, @danspringer)
+- `update.php` leert den Media-Manager-Cache und alte `blob_*`-Dateien, damit keine Header-Datei mehr auf eine nicht existierende Temp-Datei zeigt.
+- Hilfe-Seite (README) im Backend; README mit Installationshinweisen für Linux/Plesk und einem Text, den man an den Hoster schicken kann. (#37)
 
 ### Changed
-- **AVIF-Priorisierung verfeinert**: Die Converter-Reihenfolge für AVIF wird jetzt aus der Einstellung abgeleitet (statt statisch), inklusive sauberer Fallback-Kette.
-- **Setup-/Demo-Ausgabe präzisiert**: Demo-Cache und Labeling berücksichtigen jetzt die konfigurierte/effektive AVIF-Pipeline.
+- Setup-Seite und Demo-Cache zeigen den tatsächlich verwendeten Konverter je Format. (#37)
+- Einstellungsseite: Bei deaktiviertem AVIF werden die AVIF-Felder gesperrt und erklärt; das Inline-Script nutzt die CSP-Nonce von REDAXO. (#37)
 
-### UX
-- **Konfigurationsseite klarer bei deaktiviertem AVIF**: Betroffene Felder werden kontextsensitiv eingeschränkt (inkl. Toggle-Verhalten), um widersprüchliche Kombinationen zu vermeiden.
-- **Inline-Script CSP-konform**: Konfigurations-JS nutzt REDAXO-Nonce, sofern verfügbar.
+### Danke
+An @alexwenz für die gründliche Analyse und die Fixes in #38 und #39 und an @danspringer für #36, der das AVIF-Qualitätsproblem ins Rollen gebracht hat.
 
 ## [6.2.2] - 2026-06-29
 
