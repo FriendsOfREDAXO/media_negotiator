@@ -123,13 +123,25 @@ class rex_effect_negotiator extends rex_effect_abstract
         $tempFilename = uniqid('blob_', true) . '.' . $format;
         $tempPath = rex_path::addonCache('media_negotiator', $tempFilename);
         rex_file::put($tempPath, $blob);
-        
-        // Set media path (this will extract filename from path) and then set format
-        $this->media->setMediaPath($tempPath);
+
+        // The temp file is only needed until the media manager has written its cache file
+        // and sent the response, both of which happen within this request.
+        register_shutdown_function(static function () use ($tempPath): void {
+            rex_file::delete($tempPath);
+        });
+
+        // Only replace the source. setMediaPath() would also overwrite the original media path,
+        // which the media manager persists in its header cache and which other addons use to
+        // build frontend URLs (they would point to the temp file).
+        $this->media->setSourcePath($tempPath);
         $this->media->setFormat($format);
-        
+
+        // Keep the original name, only swap the extension (e.g. "header.png" -> "header.avif")
+        $filename = pathinfo($this->media->getMediaFilename(), PATHINFO_FILENAME) . '.' . $format;
+        $this->media->setMediaFilename($filename);
+
         // Set both Content-Type AND Content-Disposition headers
         $this->media->setHeader('Content-Type', 'image/' . $format);
-        $this->media->setHeader('Content-Disposition', 'inline; filename="' . $tempFilename . '";');
+        $this->media->setHeader('Content-Disposition', 'inline; filename="' . $filename . '";');
     }
 }
