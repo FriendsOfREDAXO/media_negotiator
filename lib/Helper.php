@@ -644,7 +644,7 @@ class Helper
 
             return ($ok && is_string($out) && '' !== $out) ? $out : false;
         } finally {
-            imagedestroy($img);
+            unset($img); // imagedestroy() ist seit PHP 8.0 wirkungslos und ab 8.5 deprecated
         }
     }
 }

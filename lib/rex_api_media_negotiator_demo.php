@@ -195,7 +195,7 @@ class rex_api_media_negotiator_demo extends rex_api_function
         }
 
         $imgData = ob_get_clean();
-        imagedestroy($image);
+        unset($image); // imagedestroy() ist seit PHP 8.0 wirkungslos und ab 8.5 deprecated
 
         if (!$ok || $imgData === false || $imgData === '') {
             return '';
