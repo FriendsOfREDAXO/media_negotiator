@@ -1,9 +1,9 @@
 # Changelog
 
-## [Unreleased]
+## [6.3.1] - 2026-10-03
 
 ### Fixed
-- **PHP 8.5:** `imagedestroy()` durch `unset()` ersetzt. Die Funktion ist seit PHP 8.0 wirkungslos und erzeugt ab PHP 8.5 bei jedem konvertierten Bild eine Deprecation-Meldung im Systemlog.
+- **PHP 8.5:** `imagedestroy()` durch `unset()` ersetzt. Die Funktion ist seit PHP 8.0 wirkungslos und erzeugt ab PHP 8.5 bei jedem konvertierten Bild eine Deprecation-Meldung im Systemlog. (#40)
 
 ## [6.3.0] - 2026-10-02
 
