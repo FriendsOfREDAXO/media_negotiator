@@ -338,7 +338,18 @@ class Helper
     /** @var list<string>|null */
     private static ?array $imagickFormatsCache = null;
 
+    private static bool $imagickLimitsApplied = false;
+
     /**
+     * Formats ImageMagick can write, cached across requests.
+     *
+     * The negotiator needs this list on every media request for an AVIF/WebP
+     * client, also for cache hits: the effective AVIF converter is part of the
+     * cache path (see boot.php). Querying it means creating an Imagick object
+     * per request. The list only changes with the Imagick extension or the
+     * ImageMagick library, so it is stored in the addon cache under a key made
+     * of both versions; an update of either rebuilds it automatically.
+     *
      * @return list<string>
      */
     private static function getImagickFormats(): array
@@ -349,10 +360,87 @@ class Helper
         if (null !== self::$imagickFormatsCache) {
             return self::$imagickFormatsCache;
         }
-        $imagick = new \Imagick();
-        self::$imagickFormatsCache = $imagick->queryFormats();
-        $imagick->destroy();
-        return self::$imagickFormatsCache;
+
+        $key = (string) phpversion('imagick') . '|' . \Imagick::getVersion()['versionString'];
+        $file = \rex_path::addonCache('media_negotiator', 'imagick_formats.json');
+        $cached = \rex_file::getCache($file, []);
+        if (($cached['key'] ?? null) === $key && is_array($cached['formats'] ?? null)) {
+            return self::$imagickFormatsCache = array_values(array_map('strval', $cached['formats']));
+        }
+
+        $imagick = self::newImagick();
+        try {
+            $formats = $imagick->queryFormats();
+        } finally {
+            $imagick->clear();
+            $imagick->destroy();
+        }
+        \rex_file::putCache($file, ['key' => $key, 'formats' => $formats]);
+        return self::$imagickFormatsCache = $formats;
+    }
+
+    /**
+     * Configured maximum number of ImageMagick threads (0 = ImageMagick default).
+     */
+    public static function getImagickThreadLimit(): int
+    {
+        return max(0, (int) rex_config::get('media_negotiator', 'imagick_thread_limit', 1));
+    }
+
+    /**
+     * Configured ImageMagick memory limit in MB (0 = ImageMagick default).
+     * Above it the pixel cache is memory-mapped: slower, but a large image no
+     * longer takes hundreds of MB per Apache worker.
+     */
+    public static function getImagickMemoryLimit(): int
+    {
+        return max(0, (int) rex_config::get('media_negotiator', 'imagick_memory_limit', 256));
+    }
+
+    /**
+     * Configured ImageMagick memory-map limit in MB (0 = ImageMagick default).
+     * Above it the pixel cache goes to disk.
+     */
+    public static function getImagickMapLimit(): int
+    {
+        return max(0, (int) rex_config::get('media_negotiator', 'imagick_map_limit', 512));
+    }
+
+    /**
+     * New Imagick object with thread and memory limits applied.
+     *
+     * ImageMagick built with OpenMP starts a thread pool for every conversion.
+     * Under mod_php (prefork) the worker processes are forked, and OpenMP is
+     * not fork-safe: workers can hang forever after a conversion, and the
+     * converted image never reaches the cache, so the next request starts
+     * over. max_execution_time does not help, PHP only checks it between
+     * opcodes, not inside the library. With one thread ImageMagick uses no
+     * OpenMP pool. Limits set in the server environment (MAGICK_THREAD_LIMIT,
+     * MAGICK_MEMORY_LIMIT, MAGICK_MAP_LIMIT) take precedence.
+     */
+    public static function newImagick(?string $file = null): \Imagick
+    {
+        if (!self::$imagickLimitsApplied) {
+            self::$imagickLimitsApplied = true;
+            $limits = [
+                'THREAD' => self::getImagickThreadLimit(),
+                'MEMORY' => self::getImagickMemoryLimit() * 1024 * 1024,
+                'MAP' => self::getImagickMapLimit() * 1024 * 1024,
+            ];
+            foreach ($limits as $type => $limit) {
+                $constant = \Imagick::class . '::RESOURCETYPE_' . $type;
+                if ($limit <= 0 || false !== getenv('MAGICK_' . $type . '_LIMIT') || !defined($constant)) {
+                    continue;
+                }
+                try {
+                    \Imagick::setResourceLimit((int) constant($constant), $limit);
+                } catch (\Throwable) {
+                    // Resource not supported by this ImageMagick version: keep its default
+                }
+            }
+        }
+
+        return null === $file ? new \Imagick() : new \Imagick($file);
     }
 
     public static function webpPossible(): bool
@@ -577,7 +665,7 @@ class Helper
             return false;
         }
 
-        $imagick = new \Imagick();
+        $imagick = self::newImagick();
         try {
             $imagick->readImageBlob($blob);
             $imagick->setImageFormat($targetFormat);

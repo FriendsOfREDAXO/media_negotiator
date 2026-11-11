@@ -13,6 +13,25 @@ $field->setNotice(rex_i18n::msg('media_negotiator_config_force_imagick_notice'))
 $field->addOption(rex_i18n::msg('media_negotiator_yes'), 1);
 $field->addOption(rex_i18n::msg('media_negotiator_no'), 0);
 
+$field = $form->addTextField('imagick_thread_limit');
+$field->setLabel(rex_i18n::msg('media_negotiator_config_imagick_thread_limit_label'));
+$field->setNotice(rex_i18n::msg('media_negotiator_config_imagick_thread_limit_notice'));
+$field->setAttribute('type', 'number');
+$field->setAttribute('min', '0');
+$field->setAttribute('max', '64');
+
+$field = $form->addTextField('imagick_memory_limit');
+$field->setLabel(rex_i18n::msg('media_negotiator_config_imagick_memory_limit_label'));
+$field->setNotice(rex_i18n::msg('media_negotiator_config_imagick_memory_limit_notice'));
+$field->setAttribute('type', 'number');
+$field->setAttribute('min', '0');
+
+$field = $form->addTextField('imagick_map_limit');
+$field->setLabel(rex_i18n::msg('media_negotiator_config_imagick_map_limit_label'));
+$field->setNotice(rex_i18n::msg('media_negotiator_config_imagick_map_limit_notice'));
+$field->setAttribute('type', 'number');
+$field->setAttribute('min', '0');
+
 $field = $form->addRadioField('disable_avif');
 $field->setLabel(rex_i18n::msg('media_negotiator_config_disable_avif_label'));
 $field->setNotice(rex_i18n::msg('media_negotiator_config_disable_avif_notice'));

@@ -234,6 +234,9 @@ Unter **Media Manager → Media Negotiator → Einstellungen** stehen folgende O
 | Option | Beschreibung | Standard |
 |--------|-------------|---------|
 | **Imagick erzwingen** | Imagick wird vor libvips und GD versucht – bei WebP immer, bei AVIF nur, solange die AVIF-Pipeline auf „Automatisch“ steht | Nein |
+| **Imagick: maximale Threads** | Höchstzahl der ImageMagick-Threads je Umwandlung. 1 verhindert hängende Apache-Prozesse unter mod_php (OpenMP ist nicht fork-sicher); unter PHP-FPM darf es mehr sein. 0 = Vorgabe von ImageMagick, `MAGICK_THREAD_LIMIT` auf dem Server hat Vorrang | 1 |
+| **Imagick: Arbeitsspeicher (MB)** | Darüber nutzt ImageMagick eine Memory-Map statt Arbeitsspeicher. 0 = Vorgabe von ImageMagick, `MAGICK_MEMORY_LIMIT` auf dem Server hat Vorrang | 256 |
+| **Imagick: Memory-Map (MB)** | Darüber lagert ImageMagick auf die Festplatte aus. 0 = Vorgabe von ImageMagick, `MAGICK_MAP_LIMIT` auf dem Server hat Vorrang | 512 |
 | **AVIF deaktivieren** | Verhindert AVIF-Ausgabe, z. B. wenn der Server keinen AVIF-Codec besitzt | Nein |
 | **WebP-Qualität** | Kompressionsstufe für WebP (0–100) | 80 |
 | **AVIF-Qualität** | Kompressionsstufe für AVIF (0–100) | 60 |

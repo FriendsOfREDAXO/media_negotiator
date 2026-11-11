@@ -1,5 +1,15 @@
 # Changelog
 
+## [6.3.2] - 2026-11-11
+
+### Fixed
+- **Hängende Apache-Prozesse mit Imagick:** ImageMagick mit OpenMP startet für jede Umwandlung einen Thread-Pool. Unter mod_php (Apache prefork) ist das nicht fork-sicher, Worker konnten nach einer Umwandlung dauerhaft hängen bleiben. `max_execution_time` greift dabei nicht. Imagick läuft jetzt standardmäßig mit 1 Thread (`Imagick::setResourceLimit()`), einstellbar unter *Einstellungen → Imagick: maximale Threads*; 0 = Vorgabe von ImageMagick. Zusätzlich gelten Speichergrenzen, standardmäßig 256 MB Arbeitsspeicher und 512 MB Memory-Map, einstellbar unter *Imagick: Arbeitsspeicher* und *Imagick: Memory-Map*. Darüber lagert ImageMagick auf die Festplatte aus, ein großes Bild belegt also nicht mehr hunderte MB je Apache-Prozess. Auf dem Server gesetzte Werte (`MAGICK_THREAD_LIMIT`, `MAGICK_MEMORY_LIMIT`, `MAGICK_MAP_LIMIT`) haben Vorrang. Erkennbar war das Problem an leeren AVIF-Ordnern im Media-Manager-Cache: Ein hängender Prozess schreibt das umgewandelte Bild nie in den Cache, deshalb startet jeder neue Aufruf die Umwandlung wieder. Alle Imagick-Aufrufe (Umwandlung, sRGB-Vorverarbeitung, Demo) laufen über `Helper::newImagick()`.
+- **Kein Imagick mehr bei Bildern aus dem Cache:** Für AVIF-Clients gehört der verwendete Konverter zum Cache-Pfad. Um ihn zu bestimmen, wurde bei jedem Bildaufruf ein Imagick-Objekt erzeugt und die Formatliste abgefragt, auch wenn das Bild längst im Cache lag. Die Liste wird jetzt im Addon-Cache gespeichert, mit den Versionen von Imagick und ImageMagick als Schlüssel. Ein Update einer der beiden baut sie neu auf.
+
+- **Update leert den Media-Manager-Cache nicht mehr jedes Mal:** `update.php` leerte seit 6.3.0 bei jedem Update den kompletten Media-Manager-Cache. Danach musste jedes Bild beim nächsten Aufruf neu umgewandelt werden, und der Server stand unter Volllast. Das geschieht jetzt nur noch beim Update von einer Version vor 6.3.0, für die es gedacht war. Liegengebliebene `blob_*`-Dateien werden weiterhin entfernt.
+
+Der Cache-Pfad und die erzeugten Bilder bleiben unverändert. Beim Update auf 6.3.2 bleibt der Media-Manager-Cache erhalten.
+
 ## [6.3.1] - 2026-10-03
 
 ### Fixed

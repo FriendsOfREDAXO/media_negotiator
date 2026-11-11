@@ -86,6 +86,12 @@ media_negotiator_setup_format_original = Original (kein Upgrade)
 media_negotiator_config_title = Einstellungen
 media_negotiator_config_force_imagick_label = Imagick erzwingen (auch wenn GD-Funktionen vorhanden sind)
 media_negotiator_config_force_imagick_notice = Imagick wird vor libvips und GD versucht. Für AVIF nur, solange die AVIF-Pipeline auf „Automatisch“ steht.
+media_negotiator_config_imagick_thread_limit_label = Imagick: maximale Threads
+media_negotiator_config_imagick_thread_limit_notice = Standardwert: 1. Mit OpenMP gebautes ImageMagick ist unter mod_php (Apache prefork) nicht fork-sicher: Apache-Prozesse können nach einer Umwandlung hängen bleiben. Mit 1 Thread passiert das nicht. Unter PHP-FPM kann ein höherer Wert große Bilder schneller umwandeln. 0 = Vorgabe von ImageMagick. Ist auf dem Server MAGICK_THREAD_LIMIT gesetzt, gilt dieser Wert.
+media_negotiator_config_imagick_memory_limit_label = Imagick: Arbeitsspeicher (MB)
+media_negotiator_config_imagick_memory_limit_notice = Standardwert: 256. Braucht ein Bild mehr, nutzt ImageMagick eine Memory-Map statt Arbeitsspeicher: langsamer, aber ein großes Bild belegt nicht mehr hunderte MB je Apache-Prozess. 0 = Vorgabe von ImageMagick. Ist auf dem Server MAGICK_MEMORY_LIMIT gesetzt, gilt dieser Wert.
+media_negotiator_config_imagick_map_limit_label = Imagick: Memory-Map (MB)
+media_negotiator_config_imagick_map_limit_notice = Standardwert: 512. Braucht ein Bild mehr, lagert ImageMagick auf die Festplatte aus. 0 = Vorgabe von ImageMagick. Ist auf dem Server MAGICK_MAP_LIMIT gesetzt, gilt dieser Wert.
 media_negotiator_config_disable_avif_label = AVIF deaktivieren
 media_negotiator_config_disable_avif_notice = Wenn der Server über keinen AVIF-Codec verfügt, kann die AVIF-Generierung hier deaktiviert werden.
 media_negotiator_config_webp_quality_label = WebP-Qualität (0–100)
