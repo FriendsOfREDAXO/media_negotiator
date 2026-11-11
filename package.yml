@@ -1,5 +1,5 @@
 package: media_negotiator
-version: 6.3.1
+version: 6.3.2
 name: Media Negotiator
 author: Friends of REDAXO
 supportpage: https://github.com/FriendsOfREDAXO/media_negotiator
@@ -28,6 +28,9 @@ pages:
 
 default_config:
     force_imagick: false
+    imagick_thread_limit: 1
+    imagick_memory_limit: 256
+    imagick_map_limit: 512
     disable_avif: false
     webp_quality: 80
     avif_quality: 60

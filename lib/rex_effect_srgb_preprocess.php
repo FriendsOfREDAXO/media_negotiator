@@ -29,7 +29,7 @@ class rex_effect_srgb_preprocess extends rex_effect_abstract
             return;
         }
 
-        $imagick = new Imagick();
+        $imagick = \FriendsOfRedaxo\MediaNegotiator\Helper::newImagick();
         try {
             $imagick->readImageBlob($source);
 

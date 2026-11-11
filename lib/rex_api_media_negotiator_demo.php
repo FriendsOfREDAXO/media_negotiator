@@ -211,7 +211,7 @@ class rex_api_media_negotiator_demo extends rex_api_function
         }
 
         try {
-            $im = new Imagick($sourcePath);
+            $im = \FriendsOfRedaxo\MediaNegotiator\Helper::newImagick($sourcePath);
             $im->setImageFormat($format);
             $im->setImageCompressionQuality($quality);
             $data = $im->getImageBlob();
