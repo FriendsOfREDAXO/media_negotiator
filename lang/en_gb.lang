@@ -164,3 +164,24 @@ media_negotiator_setup_demo_size_pending = loading…
 # Effect order
 media_negotiator_setup_effect_order_title = Effect order
 media_negotiator_setup_effect_order_hint = The "Negotiate image format" effect must always be the last effect in the chain. All image transformations (resize, crop, filters) must run before it – subsequent GD-based effects cannot read the converted WebP/AVIF blob.
+
+# Warm-up
+media_negotiator_warmup_title = Warm up image cache
+media_negotiator_warmup_intro = Generates all images shown on the website's pages right now – in every format that is delivered. Useful after a go-live, after clearing the media manager cache or after changed settings: otherwise the first visitor of every page waits until the images are converted (several seconds per image with AVIF). The sitemaps are read; all image sizes (srcset) are included, only images through the media manager. Keep the page open – you can pause and resume later.
+media_negotiator_warmup_sitemaps = Sitemaps
+media_negotiator_warmup_formats = Formats
+media_negotiator_warmup_format_default = Original (JPEG/PNG)
+media_negotiator_warmup_concurrency = Convert at the same time
+media_negotiator_warmup_concurrency_help = More is faster but puts more load on the server. 4 suits most servers; while visitors are on the site, rather 2.
+media_negotiator_warmup_start = Start warm-up
+media_negotiator_warmup_resume = Resume
+media_negotiator_warmup_stop = Pause
+media_negotiator_warmup_console = On the console, e.g. for a nightly cronjob:
+media_negotiator_warmup_text_pages = Reading pages: {0} of {1} – {2} images found.
+media_negotiator_warmup_text_images = Generating images: {0} of {1} ({2} images × {3} formats).
+media_negotiator_warmup_text_done = Done: {0} images from {1} pages, {2} requests.
+media_negotiator_warmup_text_cancelled = Paused at {0} of {1}.
+media_negotiator_warmup_text_idle = Not warmed up yet.
+media_negotiator_warmup_text_errors = {0} requests failed:
+media_negotiator_warmup_text_running = Running – please keep the page open.
+media_negotiator_warmup_text_leave = The warm-up is still running. Really leave the page?
