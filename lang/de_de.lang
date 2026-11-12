@@ -164,3 +164,26 @@ media_negotiator_setup_demo_size_pending = wird geladen …
 # Effekt-Reihenfolge
 media_negotiator_setup_effect_order_title = Reihenfolge der Effekte
 media_negotiator_setup_effect_order_hint = Der Effekt „Negotiate image format" muss immer als letzter Effekt in der Kette stehen. Alle Bild-Transformationen (Resize, Crop, Filter) müssen davor ausgeführt werden – nachfolgende GD-Effekte können das konvertierte WebP/AVIF-Bild nicht lesen.
+
+# Vorwärmen
+media_negotiator_warmup_title = Bild-Cache vorwärmen
+media_negotiator_warmup_intro = Erzeugt alle Bilder, die die Seiten der Website zeigen, schon jetzt – in jedem Format, das ausgeliefert wird. Sinnvoll nach einem Go-live, nach dem Leeren des Media-Manager-Caches oder nach geänderten Einstellungen: Sonst wartet der erste Besucher jeder Seite, bis die Bilder umgewandelt sind (bei AVIF mehrere Sekunden je Bild). Gelesen werden die Sitemaps; berücksichtigt werden alle Bildgrößen (srcset), nur Bilder über den Media Manager. Die Seite muss geöffnet bleiben – pausieren und später fortsetzen geht.
+media_negotiator_warmup_sitemaps = Sitemaps
+media_negotiator_warmup_formats = Formate
+media_negotiator_warmup_format_default = Original (JPEG/PNG)
+media_negotiator_warmup_concurrency = Gleichzeitig umwandeln
+media_negotiator_warmup_concurrency_help = Mehr ist schneller, belastet den Server aber stärker. 4 passt für die meisten Server; während Besucher auf der Seite sind, eher 2.
+media_negotiator_warmup_start = Vorwärmen starten
+media_negotiator_warmup_resume = Fortsetzen
+media_negotiator_warmup_stop = Anhalten
+media_negotiator_warmup_console = Auf der Konsole, z. B. für einen nächtlichen Cronjob:
+media_negotiator_warmup_text_pages = Seiten lesen: {0} von {1} – {2} Bilder gefunden.
+media_negotiator_warmup_text_images = Bilder erzeugen: {0} von {1} ({2} Bilder × {3} Formate).
+media_negotiator_warmup_text_done = Fertig: {0} Bilder von {1} Seiten, {2} Anfragen.
+media_negotiator_warmup_text_cancelled = Angehalten bei {0} von {1}.
+media_negotiator_warmup_text_failed = Keine Seite der Website war erreichbar – nichts vorgewärmt. Der Server muss seine eigene Domain aufrufen können.
+media_negotiator_warmup_text_idle = Noch nicht vorgewärmt.
+media_negotiator_warmup_text_errors = {0} Anfragen fehlgeschlagen:
+media_negotiator_warmup_text_running = Läuft – Seite bitte offen lassen.
+media_negotiator_warmup_text_leave = Das Vorwärmen läuft noch. Seite wirklich verlassen?
+media_negotiator_help = Hilfe

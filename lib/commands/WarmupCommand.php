@@ -14,7 +14,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  * Wärmt den Media Negotiator Cache vor, indem für jeden Medientyp und jedes Bild
  * HTTP-Anfragen mit den jeweiligen Accept-Headern gestellt werden.
  */
-class WarmupCommand extends Command
+class WarmupCommand extends \rex_console_command
 {
     protected function configure(): void
     {
@@ -25,11 +25,18 @@ class WarmupCommand extends Command
             ->addOption('formats', 'f', InputOption::VALUE_OPTIONAL, 'Formate als Kommaliste (avif,webp,default)', 'avif,webp,default')
             ->addOption('limit', 'l', InputOption::VALUE_OPTIONAL, 'Maximale Anzahl Bilder (0 = alle)', '0')
             ->addOption('base-url', 'u', InputOption::VALUE_OPTIONAL, 'Basis-URL (Standard: rex::getServer())')
-            ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Nur anzeigen was verarbeitet werden würde, keine Anfragen stellen');
+            ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Nur anzeigen was verarbeitet werden würde, keine Anfragen stellen')
+            ->addOption('pages', 'p', InputOption::VALUE_NONE, 'Nach den Seiten der Website: nur die Bilder (inkl. srcset-Breiten) vorwärmen, die die Seiten aus den Sitemaps zeigen, in den Formaten, die ausgeliefert werden')
+            ->addOption('concurrency', 'c', InputOption::VALUE_OPTIONAL, 'Gleichzeitige Anfragen (nur mit --pages)', '4')
+            ->addOption('sitemap', 's', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Andere Sitemap-URL(s) statt der Sitemaps der Website (nur mit --pages)');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        if ((bool) $input->getOption('pages')) {
+            return $this->warmupPages($output, (int) $input->getOption('concurrency'), (bool) $input->getOption('dry-run'), (array) $input->getOption('sitemap'));
+        }
+
         $requestedType = $input->getOption('type');
         $formatsRaw = $input->getOption('formats');
         $formats = array_map('trim', explode(',', is_string($formatsRaw) ? $formatsRaw : 'avif,webp,default'));
@@ -162,5 +169,49 @@ class WarmupCommand extends Command
 
         $output->writeln(sprintf('<info>Fertig: %d Anfragen erfolgreich gestellt.</info>', $total));
         return Command::SUCCESS;
+    }
+
+    /** Vorwärmen nach den Seiten der Website (siehe Warmup) */
+    /** @param list<string> $sitemaps */
+    private function warmupPages(OutputInterface $output, int $concurrency, bool $dryRun, array $sitemaps = []): int
+    {
+        $output->writeln('<info>Sitemaps:</info> ' . implode(', ', [] !== $sitemaps ? $sitemaps : \FriendsOfRedaxo\MediaNegotiator\Warmup::sitemaps()));
+        $output->writeln('<info>Formate:</info> ' . implode(', ', array_keys(\FriendsOfRedaxo\MediaNegotiator\Warmup::formats())));
+        $status = \FriendsOfRedaxo\MediaNegotiator\Warmup::start($concurrency, $sitemaps);
+        $output->writeln(sprintf('<info>%d Seiten</info> aus den Sitemaps', $status['pages']));
+        if ($dryRun) {
+            \FriendsOfRedaxo\MediaNegotiator\Warmup::cancel();
+
+            return Command::SUCCESS;
+        }
+
+        $progress = null;
+        while (in_array($status['status'], ['pages', 'images'], true)) {
+            $status = \FriendsOfRedaxo\MediaNegotiator\Warmup::step(30.0);
+            if ('pages' === $status['status']) {
+                $output->writeln(sprintf('  Seiten %d/%d – %d Bilder gefunden', $status['pagesDone'], $status['pages'], $status['images']));
+                continue;
+            }
+            if (null === $progress && $status['jobs'] > 0) {
+                $output->writeln(sprintf('<info>%d Bilder × %d Formate = %d Anfragen</info>', $status['images'], count($status['formats']), $status['jobs']));
+                $progress = new ProgressBar($output, $status['jobs']);
+                $progress->setFormat(' %current%/%max% [%bar%] %percent:3s%% – %elapsed:6s% / ~%estimated:-6s%');
+                $progress->start();
+            }
+            $progress?->setProgress($status['jobsDone']);
+        }
+        $progress?->finish();
+        $output->writeln('');
+        if ($status['errors'] > 0) {
+            $output->writeln(sprintf('<comment>%d Anfragen fehlgeschlagen</comment>, zuletzt: %s', $status['errors'], implode(' · ', $status['lastErrors'])));
+        }
+        if ('failed' === $status['status']) {
+            $output->writeln('<error>Keine Seite der Website erreichbar – nichts vorgewärmt. Ist die Domain vom Server aus erreichbar?</error>');
+
+            return Command::FAILURE;
+        }
+        $output->writeln(sprintf('<info>Fertig:</info> %d Bilder von %d Seiten, %d Anfragen.', $status['images'], $status['pages'], $status['jobs']));
+
+        return $status['errors'] > 0 ? Command::FAILURE : Command::SUCCESS;
     }
 }

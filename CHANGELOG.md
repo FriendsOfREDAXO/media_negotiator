@@ -1,5 +1,15 @@
 # Changelog
 
+## [6.4.0] - 2026-11-12
+
+### Added
+- **Bild-Cache vorwärmen – nach den Seiten der Website** (neue Unterseite *Media Manager → Media Negotiator → Bild-Cache vorwärmen*): liest die Sitemaps (je YRewrite-Domain), ruft alle Seiten ab und sammelt genau die Bildadressen, die dort vorkommen – inklusive aller `srcset`-Breiten von media_srcset, `data-src`/`data-srcset`, `poster` und `og:image`. Jede wird einmal je Format angefragt, das der Negotiator auf diesem Server tatsächlich ausliefert (ist AVIF abgeschaltet oder WebP bevorzugt, entfällt AVIF). Läuft in Häppchen mit Fortschrittsbalken, lässt sich anhalten und fortsetzen; mehrere Bilder gleichzeitig (einstellbar, über curl_multi). Nach einem Go-live oder Cache-Leeren wartet so kein Besucher mehr auf die Umwandlung – bei AVIF sonst mehrere Sekunden je Bild.
+- Konsole: `php redaxo/bin/console media:negotiator:warmup --pages [--concurrency=4] [--sitemap=URL]` – dasselbe für Cronjobs; `--sitemap` für Server, die die eigene Domain nicht erreichen, oder Staging. Ohne `--pages` bleibt der bisherige Modus (jedes Bild in jedem Negotiator-Typ).
+- Ist keine einzige Seite erreichbar (z. B. weil der Server seine eigene Domain nicht aufrufen kann), meldet das Vorwärmen das deutlich, statt „Fertig“ anzuzeigen.
+
+### Fixed
+- **`media:negotiator:warmup` war nie aufrufbar:** In `package.yml` stand der Befehl unter `console: commands:` – REDAXO 5 erwartet `console_commands:`. Außerdem erbt der Befehl jetzt von `rex_console_command` (sonst bricht die Konsole mit „Call to undefined method …::setPackage()“ ab).
+
 ## [6.3.2] - 2026-11-11
 
 ### Fixed

@@ -260,6 +260,29 @@ Der UA-Fallback greift nur wenn der Accept-Header keine expliziten Bildformate e
 
 ---
 
+## Bild-Cache vorwärmen
+
+Nach einem Go-live, nach dem Leeren des Media-Manager-Caches oder nach geänderten Einstellungen (Format, Qualität)
+muss jedes Bild beim ersten Aufruf neu umgewandelt werden – bei AVIF mehrere Sekunden je Bild. Unter
+**Media Manager → Media Negotiator → Bild-Cache vorwärmen** erledigt das ein Klick vorab:
+
+- Die Sitemaps der Website werden gelesen (je YRewrite-Domain, sonst `<server>/sitemap.xml`), alle Seiten abgerufen.
+- Gesammelt werden genau die Bildadressen, die die Seiten zeigen: `src`, `srcset` (alle Breiten von media_srcset),
+  `data-src`/`data-srcset`, `poster`, `og:image` – nur Bilder über den Media Manager, nur vom eigenen Host.
+- Jede Adresse wird einmal je Format angefragt, das der Negotiator ausliefert (AVIF entfällt, wenn abgeschaltet oder
+  WebP bevorzugt wird).
+- Läuft in Häppchen mit Fortschrittsanzeige; anhalten und fortsetzen geht. „Gleichzeitig umwandeln“ bestimmt die
+  Last auf dem Server (Standard 4).
+
+Für Cronjobs (z. B. nachts nach einem Deployment):
+
+```bash
+php redaxo/bin/console media:negotiator:warmup --pages --concurrency=4
+```
+
+Ohne `--pages` arbeitet der Befehl wie bisher: jedes Bild des Medienpools in jedem Medientyp mit Negotiator-Effekt –
+gründlicher, aber meist um ein Vielfaches mehr Arbeit, und ohne die Breiten von media_srcset.
+
 ## Setup-Seite
 
 Unter **Media Manager → Media Negotiator → Setup** werden die verfügbaren Codecs und Bibliotheken auf dem Server angezeigt, inklusive GD, Imagick und libvips. Die Demo-Bilder werden bedarfsgesteuert geladen und nicht mehr direkt beim Seitenaufbau inline konvertiert.
