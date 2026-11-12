@@ -205,6 +205,11 @@ class WarmupCommand extends \rex_console_command
         if ($status['errors'] > 0) {
             $output->writeln(sprintf('<comment>%d Anfragen fehlgeschlagen</comment>, zuletzt: %s', $status['errors'], implode(' · ', $status['lastErrors'])));
         }
+        if ('failed' === $status['status']) {
+            $output->writeln('<error>Keine Seite der Website erreichbar – nichts vorgewärmt. Ist die Domain vom Server aus erreichbar?</error>');
+
+            return Command::FAILURE;
+        }
         $output->writeln(sprintf('<info>Fertig:</info> %d Bilder von %d Seiten, %d Anfragen.', $status['images'], $status['pages'], $status['jobs']));
 
         return $status['errors'] > 0 ? Command::FAILURE : Command::SUCCESS;

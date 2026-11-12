@@ -25,7 +25,7 @@ pages:
                 title: 'translate:media_negotiator_warmup_title'
                 icon: 'rex-icon fa-fire'
             help:
-                title: 'translate:help'
+                title: 'translate:media_negotiator_help'
                 subPath: README.md
                 itemClass: 'pull-right'
 

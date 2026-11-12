@@ -36,8 +36,8 @@ $body .= '<div class="form-group" style="max-width:420px">'
 
 $body .= '<p>'
     . '<button type="button" class="btn btn-primary" id="mn-warmup-start"><i class="rex-icon fa-play" aria-hidden="true"></i> ' . $this->i18n('media_negotiator_warmup_start') . '</button> '
-    . '<button type="button" class="btn btn-default" id="mn-warmup-resume" hidden><i class="rex-icon fa-forward" aria-hidden="true"></i> ' . $this->i18n('media_negotiator_warmup_resume') . '</button> '
-    . '<button type="button" class="btn btn-default" id="mn-warmup-stop" hidden><i class="rex-icon fa-stop" aria-hidden="true"></i> ' . $this->i18n('media_negotiator_warmup_stop') . '</button>'
+    . '<button type="button" class="btn btn-default" id="mn-warmup-resume" style="display:none"><i class="rex-icon fa-forward" aria-hidden="true"></i> ' . $this->i18n('media_negotiator_warmup_resume') . '</button> '
+    . '<button type="button" class="btn btn-default" id="mn-warmup-stop" style="display:none"><i class="rex-icon fa-stop" aria-hidden="true"></i> ' . $this->i18n('media_negotiator_warmup_stop') . '</button>'
     . '</p>';
 $body .= '<div class="progress" style="height:22px"><div class="progress-bar" id="mn-warmup-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" style="width:0%;min-width:2em">0 %</div></div>';
 $body .= '<p id="mn-warmup-text" role="status" aria-live="polite"></p>';
@@ -50,7 +50,7 @@ $fragment->setVar('body', $body, false);
 echo $fragment->parse('core/page/section.php');
 
 $i18n = [];
-foreach (['pages', 'images', 'done', 'cancelled', 'idle', 'errors', 'running', 'leave'] as $key) {
+foreach (['pages', 'images', 'done', 'cancelled', 'failed', 'idle', 'errors', 'running', 'leave'] as $key) {
     $i18n[$key] = rex_i18n::rawMsg('media_negotiator_warmup_text_' . $key);
 }
 ?>
@@ -80,17 +80,19 @@ foreach (['pages', 'images', 'done', 'cancelled', 'idle', 'errors', 'running', '
     var render = function (s) {
         var active = s.status === 'pages' || s.status === 'images';
         // Seiten zählen 10 %, Bilder 90 % des Fortschritts
-        var pct = s.status === 'done' ? 100
+        var pct = s.status === 'done' || s.status === 'failed' ? 100
             : s.status === 'pages' ? Math.round(10 * (s.pagesDone || 0) / Math.max(1, s.pages || 1))
             : s.jobs ? 10 + Math.floor(90 * (s.jobsDone || 0) / s.jobs) : 0;
         bar.style.width = pct + '%';
         bar.textContent = pct + ' %';
         bar.setAttribute('aria-valuenow', String(pct));
-        bar.className = 'progress-bar' + (s.status === 'done' ? ' progress-bar-success' : (active && running ? ' progress-bar-striped active' : ''));
+        bar.className = 'progress-bar' + (s.status === 'done' ? ' progress-bar-success' : s.status === 'failed' ? ' progress-bar-danger' : (active && running ? ' progress-bar-striped active' : ''));
         if (s.status === 'pages') {
             text.textContent = fill(t.pages, s.pagesDone, s.pages, s.images);
         } else if (s.status === 'images' || s.status === 'cancelled') {
             text.textContent = fill(s.status === 'cancelled' ? t.cancelled : t.images, s.jobsDone, s.jobs, s.images, (s.formats || []).length);
+        } else if (s.status === 'failed') {
+            text.textContent = t.failed;
         } else if (s.status === 'done') {
             text.textContent = fill(t.done, s.images, s.pages, s.jobs);
         } else {
@@ -101,8 +103,9 @@ foreach (['pages', 'images', 'done', 'cancelled', 'idle', 'errors', 'running', '
         }
         errors.textContent = s.errors ? fill(t.errors, s.errors) + ' ' + (s.lastErrors || []).join(' · ') : '';
         startBtn.disabled = running;
-        stopBtn.hidden = !running;
-        resumeBtn.hidden = running || !(active || s.status === 'cancelled');
+        // style.display statt hidden: Bootstraps .btn überschreibt das hidden-Attribut
+        stopBtn.style.display = running ? '' : 'none';
+        resumeBtn.style.display = running || !(active || s.status === 'cancelled') ? 'none' : '';
     };
     var loop = function () {
         if (!running) return;

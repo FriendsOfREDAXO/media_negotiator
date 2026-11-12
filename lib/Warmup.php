@@ -136,11 +136,12 @@ final class Warmup
         $until = microtime(true) + max(1.0, $seconds);
         $n = (int) $state['concurrency'];
 
-        while (microtime(true) < $until) {
+        while (microtime(true) < $until && in_array($state['status'], ['pages', 'images'], true)) {
             if ('pages' === $state['status']) {
                 $batch = array_slice($state['pages'], $state['page'], $n);
                 if ([] === $batch) {
-                    $state['status'] = 'images';
+                    // keine einzige Seite erreichbar: nicht „Fertig“ melden
+                    $state['status'] = [] === $state['images'] && $state['errors'] >= count($state['pages']) ? 'failed' : 'images';
                     continue;
                 }
                 $requests = array_map(static fn (string $url) => ['url' => $url, 'accept' => 'text/html,*/*;q=0.8', 'body' => true], $batch);
