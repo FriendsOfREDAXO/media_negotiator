@@ -243,6 +243,7 @@ Unter **Media Manager → Media Negotiator → Einstellungen** stehen folgende O
 | **Bevorzugte AVIF-Pipeline** | Legt den bevorzugten AVIF-Konverter fest (`auto`, `vips`, `gd`, `imagick`). Bei `auto` wird libvips bevorzugt, sobald verfügbar. | `auto` |
 | **User-Agent-Fallback** | Format auch anhand des User-Agent ermitteln, wenn der Accept-Header keine expliziten Formate enthält | Nein |
 | **Bevorzugtes Format** | Steuert die Priorität der Ausgabe: `avif` oder `webp` | `avif` |
+| **PNG-Grafiken verlustfrei ausliefern** | PNG wird nicht in AVIF/WebP umgewandelt, sondern als PNG ausgeliefert (verkleinert, aber verlustfrei). Für Seiten, auf denen PNG vor allem für Grafiken, Diagramme und Schaubilder mit Schrift genutzt wird – AVIF/WebP machen kleine Schrift und feine Linien unscharf. JPEG wird weiter umgewandelt. Die Dateien sind größer als AVIF. | Nein |
 
 ---
 

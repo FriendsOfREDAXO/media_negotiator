@@ -47,6 +47,10 @@ rex_extension::register('MEDIA_MANAGER_INIT', function (rex_extension_point $ep)
             $cacheKey .= '-im' . ((bool) rex_config::get('media_negotiator', 'force_imagick', false) ? '1' : '0');
             $cacheKey .= '-davif' . ((bool) rex_config::get('media_negotiator', 'disable_avif', false) ? '1' : '0');
             $cacheKey .= '-pref' . FriendsOfRedaxo\MediaNegotiator\Helper::getPreferredFormat();
+            // Nur bei aktiver Option anhängen, damit bestehende Cache-Dateien gültig bleiben
+            if (FriendsOfRedaxo\MediaNegotiator\Helper::pngLossless()) {
+                $cacheKey .= '-png1';
+            }
 
             $mediaManager->setCachePath($mediaManager->getCachePath() . $cacheKey . '-');
 

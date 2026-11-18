@@ -187,3 +187,5 @@ media_negotiator_warmup_text_errors = {0} Anfragen fehlgeschlagen:
 media_negotiator_warmup_text_running = Läuft – Seite bitte offen lassen.
 media_negotiator_warmup_text_leave = Das Vorwärmen läuft noch. Seite wirklich verlassen?
 media_negotiator_help = Hilfe
+media_negotiator_config_png_lossless_label = PNG-Grafiken verlustfrei ausliefern
+media_negotiator_config_png_lossless_notice = PNG-Dateien werden nicht in AVIF/WebP umgewandelt, sondern als PNG ausgeliefert (verkleinert, aber verlustfrei). Empfohlen, wenn PNG vor allem für Grafiken, Diagramme und Schaubilder mit Schrift genutzt wird – AVIF/WebP machen kleine Schrift und feine Linien sichtbar unscharf. Fotos (JPEG) werden weiterhin umgewandelt.
