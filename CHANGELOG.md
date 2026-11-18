@@ -1,5 +1,11 @@
 # Changelog
 
+## [6.5.0] - 2026-11-18
+
+### Added
+- **PNG-Grafiken verlustfrei ausliefern** (neue Option unter *Einstellungen*, Standard: aus): PNG-Dateien werden dann nicht in AVIF/WebP umgewandelt, sondern als PNG ausgeliefert – verkleinert, aber verlustfrei. AVIF (Qualität 60) und WebP machen kleine Schrift und feine Linien in Schaubildern sichtbar unscharf, bei Fotos fällt das nicht auf. Fotos (JPEG) werden weiterhin umgewandelt. Die PNG-Dateien sind größer als AVIF.
+  - Ist die Option aus, ändert sich nichts – auch nicht der Cache-Pfad, bestehende Cache-Dateien bleiben gültig. Eingeschaltet bekommt der Cache-Pfad den Zusatz `-png1`.
+
 ## [6.4.0] - 2026-11-12
 
 ### Added

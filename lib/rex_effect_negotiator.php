@@ -16,7 +16,14 @@ class rex_effect_negotiator extends rex_effect_abstract
             // Skip non-raster formats that cannot be converted (SVG, GIF, ICO)
             $skipExtensions = ['svg', 'gif', 'ico'];
             $mediaPath = $this->media->getMediaPath() ?? '';
-            if (in_array(strtolower(rex_file::extension($mediaPath)), $skipExtensions, true)) {
+            $extension = strtolower(rex_file::extension($mediaPath));
+            if (in_array($extension, $skipExtensions, true)) {
+                return;
+            }
+
+            // Optional: PNG-Grafiken verlustfrei lassen. AVIF/WebP sind verlustbehaftet und machen kleine
+            // Schrift und feine Linien unscharf; der Media Manager liefert die (ggf. verkleinerte) PNG verlustfrei.
+            if ($extension === 'png' && Helper::pngLossless()) {
                 return;
             }
 

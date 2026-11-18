@@ -1,5 +1,5 @@
 package: media_negotiator
-version: 6.4.0
+version: 6.5.0
 name: Media Negotiator
 author: Friends of REDAXO
 supportpage: https://github.com/FriendsOfREDAXO/media_negotiator
@@ -40,6 +40,7 @@ default_config:
     avif_converter_preference: auto
     ua_fallback: false
     preferred_format: avif
+    png_lossless: false
 
 console_commands:
     'media:negotiator:warmup': FriendsOfRedaxo\MediaNegotiator\Commands\WarmupCommand

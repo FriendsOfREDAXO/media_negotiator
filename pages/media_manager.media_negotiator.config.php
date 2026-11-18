@@ -75,6 +75,12 @@ $field->setNotice(rex_i18n::msg('media_negotiator_config_ua_fallback_notice'));
 $field->addOption(rex_i18n::msg('media_negotiator_yes'), 1);
 $field->addOption(rex_i18n::msg('media_negotiator_no'), 0);
 
+$field = $form->addRadioField('png_lossless');
+$field->setLabel(rex_i18n::msg('media_negotiator_config_png_lossless_label'));
+$field->setNotice(rex_i18n::msg('media_negotiator_config_png_lossless_notice'));
+$field->addOption(rex_i18n::msg('media_negotiator_yes'), 1);
+$field->addOption(rex_i18n::msg('media_negotiator_no'), 0);
+
 $field = $form->addSelectField('preferred_format');
 $field->setLabel(rex_i18n::msg('media_negotiator_config_preferred_format_label'));
 $preferredFormatNotice = rex_i18n::msg('media_negotiator_config_preferred_format_notice');

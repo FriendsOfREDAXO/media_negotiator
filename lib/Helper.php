@@ -327,6 +327,21 @@ class Helper
         return self::$avifQualityCache;
     }
 
+    /** @var bool|null */
+    private static ?bool $pngLosslessCache = null;
+
+    /**
+     * PNG-Quellen nicht in AVIF/WebP umwandeln, sondern verlustfrei als PNG ausliefern
+     * (Grafiken mit Schrift, Linien, Diagrammen). Standard: aus.
+     */
+    public static function pngLossless(): bool
+    {
+        if (null === self::$pngLosslessCache) {
+            self::$pngLosslessCache = (bool) rex_config::get('media_negotiator', 'png_lossless', false);
+        }
+        return self::$pngLosslessCache;
+    }
+
     public static function avifDisabled(): bool
     {
         if (null === self::$avifDisabledCache) {
